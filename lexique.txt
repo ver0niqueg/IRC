@@ -1,0 +1,104 @@
+➡️ IRC (Internet Relay Chat)
+- Protocole de chat en temps reel base sur TCP (Transmission Control Protocol)
+- permet a plusieurs clients de communiquer via channels ou messages prives
+- fonctionne selon un modele client/serveur
+
+➡️ Client
+- Logiciel ou utilisateur connecte au serveur
+- possede un nickname, un username et un mdp
+- gere buffers d'entree/sortie pour recevoir et envoyer les messages de facon non bloquante
+
+➡️ Serveur
+- Ecoute sur un port TCP
+- accepte plusieurs connexions de clients simultanees
+- gere la boucle d'evenements pour lecture/ecriture non bloquante
+
+➡️ Channel(salon)
+- Espace virtuel ou plusieurs clients peuvent discuter
+- possede un nom, un topic, des modes, une cle (password) et une limite d'utilisateurs
+- certains clients peuvent avoir des privileges d'operateur pour gerer le channel
+
+➡️ Modes IRC
+i : invite-only -> seuls les invites peuvent rejoindre
+t : topic protected -> seul un op peut changer le topic
+k : key -> channel protege par un mdp
+l : limit -> limite le nb de membres
+o : op -> operateur du channel (peut kick, set mode, etc...) = moderateur ?
+
+➡️ Commandes de base
+PASS : mot de passe serveur
+NICK : definit le pseudo du client
+USER : definit username et info du client
+JOIN : rejoindre un channel
+PART : quitter un channel
+PRIVMSG : envoyer un message prive ou a un channel
+NOTICE : comme PRIVMSG mais silencieux en cas d'erreur
+KICK : expulser un utilisateur d'un channel
+INVITE : inviter un utilisateur a un channel
+MODE : changer les modes d'un channel ou d'un utilisateur
+TOPIC : definir ou afficher un topic du channel
+
+Codes de retour / erreurs
+ERR_NOSUCHNICK -> le pseudo n'existe pas
+ERR_CANNOTSENDTOCHAIN -> pas le droit d'envoyer dans le channel
+ERR_NOTONCHANNEL -> client n'est pas sur ce channel
+ERR_BADCHANNELKEY -> cle incorrecte
+RPL_TOPIC -> topic du channel
+
+➡️ TCP non-bloquant
+- socket configure pour ne pas bloquer la lecture/ecriture
+- permet de gerer plusieurs clients avec un seule boucle d'evenements
+
+➡️ Socket
+- l'interface qui permet a un programme d'envoyer et recevoir des donnees sur un reseau (= point de communication entre 2 machines)
+
+➡️ Boucle d'evenements
+- poll, select ou epoll detecte quels sockets sont prets a lire ou ecriture
+- permet de lire ou ecrire uniquement quand le socket est prets
+- les messages sont mis en buffer avant l'envoi
+
+➡️Buffers
+- Input buffer : stocke les donnees recues depuis le client
+- output buffer : stocke les messages a envoyer au client
+- permet de gerer les envois asynchrones
+
+➡️ CommandHnadler
+- Module central qui dispatch les commandes vers le bon handler
+- verifie les droits et valide les arguments
+- appelle les fonctions specifiaues (ex: PRIVMSG, KICK) et met les messages dans les buffers
+
+➡️Broadcast
+- envoi d'un message a tous les membres d'un channel sauf l'emetteur
+- important pour que les messages appareissent correctement aux autres clients
+
+➡️ Numeric Replies
+Ce sont des codes de reponse standardises que le serveur IRC envoie aux clients pour indiquer :
+- le succes d'une commande
+- une erreur
+- des informations
+
+Server - Le cœur du serveur
+
+Gère le socket d'écoute (listening socket)
+Utilise poll() pour surveiller les événements réseau sur plusieurs connexions
+Maintient une map de clients connectés (fd → Client*)
+Gère les channels (salons de discussion)
+Mode non-bloquant pour gérer plusieurs clients simultanément
+Client - Représente un utilisateur connecté
+
+Stocke les infos IRC : nickname, username, realname, hostname
+Gère l'authentification (password, enregistrement)
+Buffers de réception/envoi pour la communication asynchrone
+Liste des channels auxquels le client appartient
+Channel - Représente un salon de discussion
+
+Liste des membres et opérateurs
+Modes du channel (i=invite-only, t=topic protection, k=key, l=limit, etc.)
+Système d'invitation et de kick
+Topic avec attribution
+CommandHandler - Traite les commandes IRC
+
+Commandes d'authentification (PASS, NICK, USER)
+Commandes de channels (JOIN, PART, KICK, INVITE, TOPIC, MODE)
+Commandes de messages (PRIVMSG, NOTICE)
+Commandes opérateur (MODE, KICK, INVITE)
