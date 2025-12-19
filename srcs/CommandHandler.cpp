@@ -29,7 +29,7 @@ void CommandHandler::_initCommandMap()
     _commandMap["PING"] = &CommandHandler::cmdPing;
 }
 
-// parses an input from a client (for ex: "PRIVMSG #channel :Hello everyone!")
+// parse an input from a client (for ex: "PRIVMSG #channel :Hello everyone!")
 void CommandHandler::_parseInput(const std::string &input, std::string &command, std::vector<std::string> &params)
 {
     // Clear output variables
@@ -72,7 +72,7 @@ void CommandHandler::_parseInput(const std::string &input, std::string &command,
     }
 }
 
-// handles a raw command line from a client : it dispatches incoming IRC commands to the appropriate processing functions
+// handle a raw command line from a client : it dispatches incoming IRC commands to the appropriate processing functions
 void CommandHandler::processCommand(Client* client, const std::string &input)
 {
     if (!client || input.empty())
@@ -104,7 +104,7 @@ void CommandHandler::processCommand(Client* client, const std::string &input)
     (this->*handler)(client, params);
 }
 
-// sends a numeric IRC reply according to the IRC protocol (RFC)
+// send a numeric IRC reply according to the IRC protocol (RFC)
 void CommandHandler::sendNumericReply(Client* client, const std::string& numeric, const std::string& message)
 {
     std::stringstream ss;
@@ -120,7 +120,7 @@ void CommandHandler::sendNumericReply(Client* client, const std::string& numeric
     client->sendMessage(ss.str());
 }
 
-// sends all the mandatory IRC welcome msgs to a client after a successful connection & registration
+// send all the mandatory IRC welcome msgs to a client after a successful connection & registration
 void CommandHandler::sendWelcomeMsg(Client* client)
 {
     const std::string serverVersion = "1.0";
