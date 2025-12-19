@@ -28,15 +28,15 @@ void CommandHandler::_initCommandMap()
     _commandMap["PING"] = &CommandHandler::cmdPing;
 }
 
-void CommandHandler::_parseCommand(const std::string &rawCommand, std::string &command, std::vector<std::string> &params)
+void CommandHandler::_parseInput(const std::string &input, std::string &command, std::vector<std::string> &params)
 {
     params.clear();
     command.clear();
     
-    if (rawCommand.empty())
+    if (input.empty())
         return;
     
-    std::istringstream iss(rawCommand);
+    std::istringstream iss(input);
     std::string token;
     
     if (!(iss >> command))
@@ -68,7 +68,7 @@ void CommandHandler::processCommand(Client* client, const std::string &rawComman
     
     std::string command;
     std::vector<std::string> params;
-    _parseCommand(rawCommand, command, params);
+    _parseInput(rawCommand, command, params);
     
     if (command.empty())
         return;

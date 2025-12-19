@@ -6,7 +6,7 @@
 /*   By: vgalmich <vgalmich@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/11/06 14:09:59 by vgalmich          #+#    #+#             */
-/*   Updated: 2025/12/19 16:03:02 by vgalmich         ###   ########.fr       */
+/*   Updated: 2025/12/19 16:39:03 by vgalmich         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,7 +22,6 @@
 #include <map>
 #include <sstream>
 
-// structure de base de la classe CommandHandler
 class CommandHandler
 {
     public:
@@ -31,10 +30,10 @@ class CommandHandler
         // typedef pour pointeur vers fonctions membres de CommandHandler
         typedef void (CommandHandler::*CommandHandlerFunction)(Client* client, const std::vector<std::string>&);
         
-        void processCommand(Client* client, const std::string &rawCommand);
+        void processCommand(Client* client, const std::string &input);
         
     private:
-        Server *_server; // lien vers le serveur
+        Server *_server;
         
         // Map des commandes vers leurs handlers
         std::map<std::string, CommandHandlerFunction> _commandMap;
@@ -43,23 +42,23 @@ class CommandHandler
         void _initCommandMap();
         
         // Parse une commande IRC brute en commande + params
-        void _parseCommand(const std::string &rawCommand, std::string &command, std::vector<std::string> &params);
+        void _parseInput(const std::string &input, std::string &command, std::vector<std::string> &params);
         
-        // Commandes d'authentification
+        // ========== AUTH COMMANDS ==========
         void cmdPass(Client* client, const std::vector<std::string> &params);
         void cmdNick(Client* client, const std::vector<std::string> &params);
         void cmdUser(Client* client, const std::vector<std::string> &params);
         
-        // Commandes de channel
+        // ========== CHANNEL COMMANDS ==========
         void cmdJoin(Client* client, const std::vector<std::string> &params);
         void cmdPart(Client* client, const std::vector<std::string> &params);
         void cmdNames(Client* client, const std::vector<std::string> &params);
         
-        // Commandes de messages
+        // ========== MESSAGE COMMANDS ==========
         void cmdPrivmsg(Client* client, const std::vector<std::string> &params);
         void cmdNotice(Client* client, const std::vector<std::string> &params);
         
-        // Commandes d'opérateur
+        // ========== OPERATOR COMMANDS ==========
         void cmdKick(Client* client, const std::vector<std::string> &params);
         void cmdInvite(Client* client, const std::vector<std::string> &params);
         void cmdTopic(Client* client, const std::vector<std::string> &params);
