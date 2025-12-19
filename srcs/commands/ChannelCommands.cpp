@@ -82,7 +82,7 @@ void CommandHandler::cmdJoin(Client* client, const std::vector<std::string> &par
             sendNumericReply(client, RPL_NOTOPIC, channelName + " :No topic is set");
 
         std::string namesList;
-        const std::set<Client*>& members = chan->getMembersList();
+        const std::set<Client*>& members = chan->getMembers();
         for (std::set<Client*>::const_iterator it = members.begin(); it != members.end(); ++it)
         {
             if (!namesList.empty())
@@ -144,7 +144,7 @@ void CommandHandler::cmdPart(Client* client, const std::vector<std::string> &par
         chan->removeOperator(client);
         client->leaveChannel(channelName);
         
-        if (chan->getMembersList().empty())
+        if (chan->getMembers().empty())
             _server->removeChannel(channelName);
     }
 }
@@ -170,7 +170,7 @@ void CommandHandler::cmdNames(Client* client, const std::vector<std::string> &pa
     }
     
     std::string namesList;
-    const std::set<Client*>& members = chan->getMembersList();
+    const std::set<Client*>& members = chan->getMembers();
     for (std::set<Client*>::const_iterator it = members.begin(); it != members.end(); ++it)
     {
         if (!namesList.empty())

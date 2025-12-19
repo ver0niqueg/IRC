@@ -18,35 +18,35 @@ Channel::~Channel() {}
 bool Channel::addUser(Client* client, const std::string& key) {
     if (_modes['k'] && _key != "" && key != _key)
         return false;
-    if (_modes['l'] && _limit > 0 && (int)_membersList.size() >= _limit)
+    if (_modes['l'] && _limit > 0 && (int)_members.size() >= _limit)
         return false;
-    if (_modes['i'] && _invitedList.find(client) == _invitedList.end())
+    if (_modes['i'] && _invited.find(client) == _invited.end())
         return false;
-    _membersList.insert(client);
+    _members.insert(client);
     return true;
 }
 
 bool Channel::removeUser(Client* client) {
-    return _membersList.erase(client) > 0;
+    return _members.erase(client) > 0;
 }
 
 bool Channel::isMember(Client* client) const {
-    return _membersList.find(client) != _membersList.end();
+    return _members.find(client) != _members.end();
 }
 
 bool Channel::addOperator(Client* client) {
     if (!isMember(client))
         return false;
-    _operatorsList.insert(client);
+    _operators.insert(client);
     return true;
 }
 
 bool Channel::removeOperator(Client* client) {
-    return _operatorsList.erase(client) > 0;
+    return _operators.erase(client) > 0;
 }
 
 bool Channel::isOperator(Client* client) const {
-    return _operatorsList.find(client) != _operatorsList.end();
+    return _operators.find(client) != _operators.end();
 }
 
 void Channel::setMode(char mode, bool enabled, Client* setter, const std::string& param) {
@@ -118,7 +118,7 @@ std::string Channel::getTopic() const {
 bool Channel::invite(Client* operatorClient, Client* targetClient) {
     if (!isOperator(operatorClient))
         return false;
-    _invitedList.insert(targetClient);
+    _invited.insert(targetClient);
     return true;
 }
 
@@ -136,14 +136,14 @@ std::string Channel::getName() const {
     return _name;
 }
 
-std::set<Client*> Channel::getMembersList() const {
-    return _membersList;
+std::set<Client*> Channel::getMembers() const {
+    return _members;
 }
 
-std::set<Client*> Channel::getOperatorsList() const {
-    return _operatorsList;
+std::set<Client*> Channel::getOperators() const {
+    return _operators;
 }
 
-std::set<Client*> Channel::getInvitedList() const {
-    return _invitedList;
+std::set<Client*> Channel::getInvited() const {
+    return _invited;
 }

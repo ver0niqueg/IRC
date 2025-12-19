@@ -44,15 +44,15 @@ class Channel
 
         // getters
         std::string getName() const;
-        std::set<Client*> getMembersList() const;
-        std::set<Client*> getOperatorsList() const;
-        std::set<Client*> getInvitedList() const;
+        std::set<Client*> getMembers() const;
+        std::set<Client*> getOperators() const;
+        std::set<Client*> getInvited() const;
 
     private:
         std::string _name;
-        std::set<Client*> _membersList;
-        std::set<Client*> _operatorsList;
-        std::set<Client*> _invitedList;
+        std::set<Client*> _members;
+        std::set<Client*> _operators;
+        std::set<Client*> _invited;
         std::string _topic;
         std::map<char, bool> _modes; // i, t, k, l, o
         std::string _key;

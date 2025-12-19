@@ -280,7 +280,7 @@ void Server::broadcastToChannel(const std::string& channelName, const std::strin
 		return;
 	}
 	
-	std::set<Client*> members = channel->getMembersList();
+	std::set<Client*> members = channel->getMembers();
 	std::cout << "Broadcasting to channel " << channelName 
 	          << " (" << members.size() << " members)" << std::endl;
 	
