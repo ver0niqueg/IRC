@@ -6,6 +6,7 @@ CommandHandler::CommandHandler(Server *server) : _server(server)
     _initCommandMap();
 }
 
+// dispatch IRC commands to the right methods
 void CommandHandler::_initCommandMap()
 {
     _commandMap["PASS"] = &CommandHandler::cmdPass;
@@ -28,6 +29,7 @@ void CommandHandler::_initCommandMap()
     _commandMap["PING"] = &CommandHandler::cmdPing;
 }
 
+// parse an input from a client (for ex: "PRIVMSG #channel :Hello everyone!")
 void CommandHandler::_parseInput(const std::string &input, std::string &command, std::vector<std::string> &params)
 {
     params.clear();
@@ -61,14 +63,14 @@ void CommandHandler::_parseInput(const std::string &input, std::string &command,
     }
 }
 
-void CommandHandler::processCommand(Client* client, const std::string &rawCommand)
+void CommandHandler::processCommand(Client* client, const std::string &input)
 {
-    if (!client || rawCommand.empty())
+    if (!client || input.empty())
         return;
     
     std::string command;
     std::vector<std::string> params;
-    _parseInput(rawCommand, command, params);
+    _parseInput(input, command, params);
     
     if (command.empty())
         return;
