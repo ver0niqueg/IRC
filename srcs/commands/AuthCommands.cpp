@@ -18,12 +18,12 @@ void CommandHandler::cmdPass(Client* client, const std::vector<std::string> &par
     if (password == _server->getPassword())
     {
         client->setPasswordGiven(true);
-        std::cout << "Client " << client->getFd() << " provided correct password" << std::endl;
+        std::cout << "Client " << client->getClientFd() << " provided correct password" << std::endl;
     }
     else
     {
         sendNumericReply(client, ERR_PASSWDMISMATCH, ":Password incorrect");
-        std::cout << "Client " << client->getFd() << " provided wrong password" << std::endl;
+        std::cout << "Client " << client->getClientFd() << " provided wrong password" << std::endl;
     }
 }
 
@@ -54,7 +54,7 @@ void CommandHandler::cmdNick(Client* client, const std::vector<std::string> &par
     
     if (client->isRegistered() && !oldNick.empty())
     {
-        const std::set<std::string>& channels = client->getChannels();
+        const std::set<std::string>& channels = client->getJoinedChannels();
         for (std::set<std::string>::const_iterator it = channels.begin(); it != channels.end(); ++it)
         {
             Channel* channel = _server->getChannel(*it);
@@ -71,7 +71,7 @@ void CommandHandler::cmdNick(Client* client, const std::vector<std::string> &par
     if (!client->getUsername().empty() && client->isPasswordGiven() && !client->isRegistered())
     {
         client->setRegistered(true);
-        sendWelcome(client);
+        sendWelcomeMsg(client);
     }
 }
 
@@ -104,7 +104,7 @@ void CommandHandler::cmdUser(Client* client, const std::vector<std::string> &par
     if (!client->getNickname().empty())
     {
         client->setRegistered(true);
-        sendWelcome(client);
+        sendWelcomeMsg(client);
     }
 }
 
@@ -116,15 +116,15 @@ void CommandHandler::cmdQuit(Client* client, const std::vector<std::string> &par
     
     std::cout << "Client " << client->getNickname() << " quit: " << reason << std::endl;
     
-    const std::set<std::string>& channels = client->getChannels();
+    const std::set<std::string>& channels = client->getJoinedChannels();
     for (std::set<std::string>::const_iterator it = channels.begin(); it != channels.end(); ++it)
     {
         Channel* channel = _server->getChannel(*it);
         if (channel)
         {
             std::string quitMsg = client->getPrefix() + " QUIT :" + reason + "\r\n";
-            _server->broadcastToChannel(*it, quitMsg, client->getFd());
-            channel->removeMember(client);
+            _server->broadcastToChannel(*it, quitMsg, client->getClientFd());
+            channel->removeUser(client);
             channel->removeOperator(client);
         }
     }

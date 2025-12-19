@@ -49,9 +49,9 @@ void CommandHandler::cmdKick(Client* client, const std::vector<std::string> &par
     std::string kickMsg = client->getPrefix() + " KICK " + channelName + " " + targetNick + " :" + reason + "\r\n";
     _server->broadcastToChannel(channelName, kickMsg, -1);
     
-    chan->removeMember(targetClient);
+    chan->removeUser(targetClient);
     chan->removeOperator(targetClient);
-    targetClient->removeChannel(channelName);
+    targetClient->leaveChannel(channelName);
     
     std::cout << targetNick << " kicked from " << channelName << " by " << client->getNickname() << std::endl;
 }

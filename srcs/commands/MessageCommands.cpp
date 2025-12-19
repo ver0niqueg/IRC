@@ -39,7 +39,7 @@ void CommandHandler::cmdPrivmsg(Client* client, const std::vector<std::string> &
         }
         
         std::string msg = client->getPrefix() + " PRIVMSG " + target + " :" + message + "\r\n";
-        _server->broadcastToChannel(target, msg, client->getFd());
+        _server->broadcastToChannel(target, msg, client->getClientFd());
     }
     else
     {
@@ -76,7 +76,7 @@ void CommandHandler::cmdNotice(Client* client, const std::vector<std::string> &p
             return;
         
         std::string msg = client->getPrefix() + " NOTICE " + target + " :" + message + "\r\n";
-        _server->broadcastToChannel(target, msg, client->getFd());
+        _server->broadcastToChannel(target, msg, client->getClientFd());
     }
     else
     {

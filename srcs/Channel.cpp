@@ -49,7 +49,7 @@ bool Channel::isOperator(Client* client) const {
     return _operatorsList.find(client) != _operatorsList.end();
 }
 
-void Channel::enableMode(char mode, bool enabled, Client* setter, const std::string& param) {
+void Channel::setMode(char mode, bool enabled, Client* setter, const std::string& param) {
     if (_modes.find(mode) == _modes.end())
         return;
         

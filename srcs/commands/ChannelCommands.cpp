@@ -54,7 +54,7 @@ void CommandHandler::cmdJoin(Client* client, const std::vector<std::string> &par
             continue;
         }
         
-        if (!chan->addMember(client, key))
+        if (!chan->addUser(client, key))
         {
             if (chan->getMode('i'))
                 sendNumericReply(client, ERR_INVITEONLYCHAN, channelName + " :Cannot join channel (+i)");
@@ -70,7 +70,7 @@ void CommandHandler::cmdJoin(Client* client, const std::vector<std::string> &par
         if (isNewChannel)
             chan->addOperator(client);
         
-        client->addChannel(channelName);
+        client->joinChannel(channelName);
         
         std::string joinMsg = client->getPrefix() + " JOIN " + channelName + "\r\n";
         _server->broadcastToChannel(channelName, joinMsg, -1);
@@ -82,7 +82,7 @@ void CommandHandler::cmdJoin(Client* client, const std::vector<std::string> &par
             sendNumericReply(client, RPL_NOTOPIC, channelName + " :No topic is set");
 
         std::string namesList;
-        const std::set<Client*>& members = chan->getMembers();
+        const std::set<Client*>& members = chan->getMembersList();
         for (std::set<Client*>::const_iterator it = members.begin(); it != members.end(); ++it)
         {
             if (!namesList.empty())
@@ -140,11 +140,11 @@ void CommandHandler::cmdPart(Client* client, const std::vector<std::string> &par
         std::string partMsg = client->getPrefix() + " PART " + channelName + " :" + reason + "\r\n";
         _server->broadcastToChannel(channelName, partMsg, -1);
         
-        chan->removeMember(client);
+        chan->removeUser(client);
         chan->removeOperator(client);
-        client->removeChannel(channelName);
+        client->leaveChannel(channelName);
         
-        if (chan->getMembers().empty())
+        if (chan->getMembersList().empty())
             _server->removeChannel(channelName);
     }
 }
@@ -170,7 +170,7 @@ void CommandHandler::cmdNames(Client* client, const std::vector<std::string> &pa
     }
     
     std::string namesList;
-    const std::set<Client*>& members = chan->getMembers();
+    const std::set<Client*>& members = chan->getMembersList();
     for (std::set<Client*>::const_iterator it = members.begin(); it != members.end(); ++it)
     {
         if (!namesList.empty())

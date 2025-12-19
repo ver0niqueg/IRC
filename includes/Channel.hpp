@@ -23,7 +23,7 @@ class Channel
         bool isOperator(Client* client) const;
 
         // modes
-        void enableMode(char mode, bool enabled, Client* setter = NULL, const std::string& param = "");
+        void setMode(char mode, bool enabled, Client* setter = NULL, const std::string& param = "");
         bool getMode(char mode) const;
 
         // key + limit
