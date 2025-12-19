@@ -1,27 +1,33 @@
 #include "CommandHandler.hpp"
 
+// validate the client's password
 void CommandHandler::cmdPass(Client* client, const std::vector<std::string> &params)
 {
-    if (client->isRegistered())
+    // if the client is already registered, reject re-registration
+    if (client->isRegistered()) 
     {
         sendNumericReply(client, ERR_ALREADYREGISTRED, ":You may not reregister");
         return;
     }
-    
-    if (params.empty())
-    {
+
+    // Check if a password parameter was provided
+    if (params.empty()) {
         sendNumericReply(client, ERR_NEEDMOREPARAMS, "PASS :Not enough parameters");
         return;
     }
-    
+
     const std::string& password = params[0];
-    if (password == _server->getPassword())
-    {
+
+    // Check if the password is correct
+    if (password == _server->getPassword()) {
+        if (client->isPasswordGiven()) {
+            // Password already accepted, ignore further PASS commands
+            std::cout << "Client " << client->getClientFd() << " tried to resend PASS (already accepted)" << std::endl;
+            return;
+        }
         client->setPasswordGiven(true);
         std::cout << "Client " << client->getClientFd() << " provided correct password" << std::endl;
-    }
-    else
-    {
+    } else {
         sendNumericReply(client, ERR_PASSWDMISMATCH, ":Password incorrect");
         std::cout << "Client " << client->getClientFd() << " provided wrong password" << std::endl;
     }

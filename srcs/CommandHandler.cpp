@@ -88,7 +88,8 @@ void CommandHandler::processCommand(Client* client, const std::string &input)
     // find the handler for the command
     std::map<std::string, CommandHandlerFunction>::iterator it = _commandMap.find(command);
 
-    if (it == _commandMap.end()) {
+    if (it == _commandMap.end()) 
+    {
         // unknown command: log and reply error
         std::cerr << "Unknown command from client " << client->getClientFd() << ": '" << command << "'" << std::endl;
         sendNumericReply(client, ERR_UNKNOWNCOMMAND, command + " :Unknown command");
