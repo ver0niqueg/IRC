@@ -32,64 +32,76 @@ void CommandHandler::_initCommandMap()
 // parses an input from a client (for ex: "PRIVMSG #channel :Hello everyone!")
 void CommandHandler::_parseInput(const std::string &input, std::string &command, std::vector<std::string> &params)
 {
+    // Clear output variables
     params.clear();
     command.clear();
-    
+
     if (input.empty())
         return;
-    
+
     std::istringstream iss(input);
-    std::string token;
-    
+    std::string word;
+
+    // extract the command (first word)
     if (!(iss >> command))
         return;
-    
+
+    // uppercase the command for uniformity
     for (size_t i = 0; i < command.length(); ++i)
         command[i] = std::toupper(command[i]);
-    
-    while (iss >> token)
+
+    // parse parameters
+    while (iss >> word)
     {
-        if (token[0] == ':')
+        // if a parameter starts with ':', everything after is a single parameter (the message)
+        if (!word.empty() && word[0] == ':')
         {
-            std::string msg = token.substr(1);
-            std::string rest;
-            std::getline(iss, rest);
-            msg += rest;
-            params.push_back(msg);
+            std::string message = word.substr(1);
+            std::string restOfLine;
+            std::getline(iss, restOfLine);
+            if (!restOfLine.empty() && restOfLine[0] == ' ')
+                restOfLine.erase(0, 1); // remove leading space
+            message += restOfLine;
+            params.push_back(message);
             break;
         }
         else
-            params.push_back(token);
+        {
+            params.push_back(word);
+        }
     }
 }
 
-// handles a command from a client
+// handles a raw command line from a client : it dispatches incoming IRC commands to the appropriate processing functions
 void CommandHandler::processCommand(Client* client, const std::string &input)
 {
     if (!client || input.empty())
         return;
-    
+
     std::string command;
     std::vector<std::string> params;
     _parseInput(input, command, params);
-    
+
     if (command.empty())
         return;
-    
-    std::cout << "Command: " << command << " (params: " << params.size() << ") from client " 
+
+    // find the handler for the command
+    std::map<std::string, CommandHandlerFunction>::iterator it = _commandMap.find(command);
+
+    if (it == _commandMap.end()) {
+        // unknown command: log and reply error
+        std::cerr << "Unknown command from client " << client->getClientFd() << ": '" << command << "'" << std::endl;
+        sendNumericReply(client, ERR_UNKNOWNCOMMAND, command + " :Unknown command");
+        return;
+    }
+
+    // log the command and parameters
+    std::cout << "Command: " << command << " (params: " << params.size() << ") from client "
               << client->getClientFd() << std::endl;
 
-    std::map<std::string, CommandHandlerFunction>::iterator it = _commandMap.find(command);
-    
-    if (it != _commandMap.end())
-    {
-        CommandHandlerFunction handler = it->second;
-        (this->*handler)(client, params);
-    }
-    else
-    {
-        sendNumericReply(client, ERR_UNKNOWNCOMMAND, command + " :Unknown command");
-    }
+    // call the handler function
+    CommandHandlerFunction handler = it->second;
+    (this->*handler)(client, params);
 }
 
 // sends a numeric IRC reply according to the IRC protocol (RFC)
@@ -127,6 +139,7 @@ void CommandHandler::sendWelcomeMsg(Client* client)
     sendNumericReply(client, RPL_MYINFO, myInfoMsg);
 }
 
+// check if the nickname is valid according to IRC rules
 bool CommandHandler::isValidNickname(const std::string& nickname)
 {
     static const std::string allowedSpecial = "-_[]{}\\|^";
@@ -147,20 +160,23 @@ bool CommandHandler::isValidNickname(const std::string& nickname)
     return true;
 }
 
+// check if the Channel name is valid according to IRC rules
 bool CommandHandler::isValidChannelName(const std::string& name)
 {
+    static const std::string forbiddenChars = " ,\x07";
+
     if (name.empty() || name.length() > 50)
         return false;
-    
+
     if (name[0] != '#' && name[0] != '&')
         return false;
-    
+
     for (size_t i = 1; i < name.length(); ++i)
     {
         char c = name[i];
-        if (std::isspace(c) || c == ',' || c == '\x07')
+        if (forbiddenChars.find(c) != std::string::npos)
             return false;
     }
-    
+
     return true;
 }
