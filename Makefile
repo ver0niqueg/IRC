@@ -34,11 +34,6 @@ CC =			c++
 CFLAGS =		-Wall -Wextra -Werror -std=c++98
 RM =			rm -f
 
-################################################################################
-#                                PROGRAM'S SOURCES                             #
-################################################################################
-
-# Directory paths
 SRC =			./srcs/
 OBJ =			./objs/
 INC =			./includes
@@ -103,7 +98,7 @@ help:
 				@echo "\n$(CYAN)all$(DEFAULT)		- Build the executable $(NAME)"
 				@echo "$(CYAN)clean$(DEFAULT)		- Clean up object files"
 				@echo "$(CYAN)fclean$(DEFAULT)		- Clean up all object files and executable"
-				@echo "$(CYAN)re$(DEFAULT)		- Rebuild the entire project"
+				@echo "$(CYAN)re$(DEFAULT)			- Rebuild the entire project"
 				@echo "$(CYAN)debug$(DEFAULT)		- Run the program with debugging flags -g3 -fsanitize=address\n"
 
 # Rule to ensure that these targets are always executed as intended, even if there are files with the same name

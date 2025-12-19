@@ -37,16 +37,16 @@ private:
 	CommandHandler*		_commandHandler;
 	
 	// Etat du serveur
-	bool				_running; // true = serveur actif
+	bool				_isrunning; // true = serveur actif
 	
 	// Méthodes privées (utilitaires internes)
 	void				_setupServerSocket();
 	void				_setNonBlocking(int fd);
-	void				_acceptNewClient();
-	void				_handleClientData(int fd);
+	void				_acceptClientConnection();
+	void				_processClientData(int fd);
 	void				_sendPendingData(int fd);
 	void				_disconnectClient(int fd);
-	void				_sendToClient(int fd, const std::string& message);
+	void				_sendMsgToClient(int fd, const std::string& message);
 	void				_removePollFd(int fd);
 	void				_enablePollOut(int fd);
 	void				_disablePollOut(int fd);

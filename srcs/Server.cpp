@@ -17,7 +17,7 @@ Server::Server(int port, const std::string& password)
 	  _serverName("ft_irc.42.fr"),
 	  _serverSocket(-1),
 	  _commandHandler(NULL),
-	  _running(false)
+	  _isrunning(false)
 {
 	std::cout << "Constructing Server object..." << std::endl;
 	if (port <= 0 || port > 65535)
@@ -135,8 +135,8 @@ const std::string& Server::getServerName() const
 void Server::start()
 {
 	std::cout << "Starting server event loop..." << std::endl;
-	_running = true;
-	while (_running)
+	_isrunning = true;
+	while (_isrunning)
 	{
 		int pollCount = poll(&_pollFds[0], _pollFds.size(), -1);
 		if (pollCount == -1)
@@ -153,7 +153,7 @@ void Server::start()
 			if (_pollFds[i].fd == _serverSocket)
 			{
 				if (_pollFds[i].revents & POLLIN)
-					_acceptNewClient();
+					_acceptClientConnection();
 			}
 			else
 			{
@@ -179,7 +179,7 @@ void Server::start()
 				}
 				
 				if (_pollFds[i].revents & POLLIN)
-					_handleClientData(clientFd);
+					_processClientData(clientFd);
 				
 				if (_pollFds[i].revents & POLLOUT)
 					_sendPendingData(clientFd);
@@ -191,10 +191,10 @@ void Server::start()
 
 void Server::stop()
 {
-	if (_running)
+	if (_isrunning)
 	{
 		std::cout << "Stopping server..." << std::endl;
-		_running = false;
+		_isrunning = false;
 	}
 }
 
@@ -205,7 +205,7 @@ void Server::printStats() const
 	std::cout << "  Channels active: " << _channels.size() << std::endl;
 	std::cout << "  Poll fds: " << _pollFds.size() << " (1 server + " 
 	          << (_pollFds.size() - 1) << " clients)" << std::endl;
-	std::cout << "  Server running: " << (_running ? "Yes" : "No") << std::endl;
+	std::cout << "  Server running: " << (_isrunning ? "Yes" : "No") << std::endl;
 }
 
 Client* Server::getClient(int fd)
@@ -280,16 +280,16 @@ void Server::broadcastToChannel(const std::string& channelName, const std::strin
 		return;
 	}
 	
-	std::set<Client*> members = channel->getMembers();
+	std::set<Client*> members = channel->getMembersList();
 	std::cout << "Broadcasting to channel " << channelName 
 	          << " (" << members.size() << " members)" << std::endl;
 	
 	for (std::set<Client*>::iterator it = members.begin(); it != members.end(); ++it)
 	{
-		if (*it && (*it)->getFd() != excludeFd)
+		if (*it && (*it)->getClientFd() != excludeFd)
 		{
 			(*it)->sendMessage(message);
-			_enablePollOut((*it)->getFd());
+			_enablePollOut((*it)->getClientFd());
 		}
 	}
 	
@@ -297,7 +297,7 @@ void Server::broadcastToChannel(const std::string& channelName, const std::strin
 	          << (message.length() > 50 ? "..." : "") << std::endl;
 }
 
-void Server::_acceptNewClient()
+void Server::_acceptClientConnection()
 {
 	struct sockaddr_in clientAddr;
 	socklen_t clientAddrLen = sizeof(clientAddr);
@@ -345,7 +345,7 @@ void Server::_acceptNewClient()
 	}
 }
 
-void Server::_handleClientData(int fd)
+void Server::_processClientData(int fd)
 {
 	char buffer[4096];
 	ssize_t bytesRead;
@@ -362,13 +362,13 @@ void Server::_handleClientData(int fd)
 			Client* client = getClient(fd);
 			if (client)
 			{
-				client->appendToRecvBuffer(buffer, bytesRead);
+				client->appendToReceiveBuffer(buffer, bytesRead);
 				
 				std::string command;
 				while (client->extractCommand(command))
 				{
 					if (_commandHandler)
-						_commandHandler->handleCommand(client, command);
+						_commandHandler->processCommand(client, command);
 				}
 			}
 		}
@@ -408,7 +408,7 @@ void Server::_disconnectClient(int fd)
 			if (!nickname.empty())
 				std::cout << "   Client nickname: " << nickname << std::endl;
 			
-			const std::set<std::string>& channels = it->second->getChannels();
+			const std::set<std::string>& channels = it->second->getJoinedChannels();
 			for (std::set<std::string>::const_iterator chanIt = channels.begin(); chanIt != channels.end(); ++chanIt)
 			{
 				Channel* chan = getChannel(*chanIt);
@@ -416,7 +416,7 @@ void Server::_disconnectClient(int fd)
 				{
 					std::string quitMsg = it->second->getPrefix() + " QUIT :Client disconnected\r\n";
 					broadcastToChannel(*chanIt, quitMsg, fd);
-					chan->removeMember(it->second);
+					chan->removeUser(it->second);
 					chan->removeOperator(it->second);
 				}
 			}
@@ -442,7 +442,7 @@ void Server::_disconnectClient(int fd)
 	          << _clients.size() << " clients remaining)" << std::endl;
 }
 
-void Server::_sendToClient(int fd, const std::string& message)
+void Server::_sendMsgToClient(int fd, const std::string& message)
 {
 	ssize_t bytesSent = send(fd, message.c_str(), message.length(), 0);
 	if (bytesSent == -1)
@@ -481,7 +481,7 @@ void Server::_sendPendingData(int fd)
 	if (bytesSent > 0)
 	{
 		std::cout << "Sent " << bytesSent << " bytes to client " << fd << std::endl;
-		client->consumeSendBuffer(bytesSent);
+		client->consumeFromSendBuffer(bytesSent);
 		
 		if (client->getSendBuffer().empty())
 			_disablePollOut(fd);

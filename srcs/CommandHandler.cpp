@@ -61,7 +61,7 @@ void CommandHandler::_parseCommand(const std::string &rawCommand, std::string &c
     }
 }
 
-void CommandHandler::handleCommand(Client* client, const std::string &rawCommand)
+void CommandHandler::processCommand(Client* client, const std::string &rawCommand)
 {
     if (!client || rawCommand.empty())
         return;
@@ -74,13 +74,13 @@ void CommandHandler::handleCommand(Client* client, const std::string &rawCommand
         return;
     
     std::cout << "Command: " << command << " (params: " << params.size() << ") from client " 
-              << client->getFd() << std::endl;
+              << client->getClientFd() << std::endl;
 
-    std::map<std::string, CommandFunction>::iterator it = _commandMap.find(command);
+    std::map<std::string, CommandHandlerFunction>::iterator it = _commandMap.find(command);
     
     if (it != _commandMap.end())
     {
-        CommandFunction handler = it->second;
+        CommandHandlerFunction handler = it->second;
         (this->*handler)(client, params);
     }
     else
@@ -104,7 +104,7 @@ void CommandHandler::sendNumericReply(Client* client, const std::string& numeric
     client->sendMessage(ss.str());
 }
 
-void CommandHandler::sendWelcome(Client* client)
+void CommandHandler::sendWelcomeMsg(Client* client)
 {
     std::stringstream ss;
     ss.str("");

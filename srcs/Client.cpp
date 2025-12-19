@@ -3,7 +3,7 @@
 #include <sstream>
 
 Client::Client(int fd, const std::string& ipAddress, int port)
-	: _fd(fd),
+	: _clientFd(fd),
 	  _ipAddress(ipAddress),
 	  _port(port),
 	  _nickname(""),
@@ -13,23 +13,23 @@ Client::Client(int fd, const std::string& ipAddress, int port)
 	  _authenticated(false),
 	  _passwordGiven(false),
 	  _registered(false),
-	  _recvBuffer(""),
+	  _receiveBuffer(""),
 	  _sendBuffer("")
 {
-	std::cout << "Client object created (fd: " << _fd << ", " << _ipAddress << ":" << _port << ")" << std::endl;
+	std::cout << "Client object created (fd: " << _clientFd << ", " << _ipAddress << ":" << _port << ")" << std::endl;
 }
 
 Client::~Client()
 {
-	std::cout << "Client object destroyed (fd: " << _fd;
+	std::cout << "Client object destroyed (fd: " << _clientFd;
 	if (!_nickname.empty())
 		std::cout << ", nickname: " << _nickname;
 	std::cout << ")" << std::endl;
 }
 
-int Client::getFd() const
+int Client::getClientFd() const
 {
-	return (_fd);
+	return (_clientFd);
 }
 
 std::string Client::getIpAddress() const
@@ -77,9 +77,9 @@ bool Client::isRegistered() const
 	return (_registered);
 }
 
-const std::string& Client::getRecvBuffer() const
+const std::string& Client::getReceiveBuffer() const
 {
-	return (_recvBuffer);
+	return (_receiveBuffer);
 }
 
 const std::string& Client::getSendBuffer() const
@@ -87,20 +87,20 @@ const std::string& Client::getSendBuffer() const
 	return (_sendBuffer);
 }
 
-const std::set<std::string>& Client::getChannels() const
+const std::set<std::string>& Client::getJoinedChannels() const
 {
-	return (_channels);
+	return (_joinedChannels);
 }
 
 void Client::setNickname(const std::string& nickname)
 {
-	std::cout << "Client " << _fd << " nickname set to: " << nickname << std::endl;
+	std::cout << "Client " << _clientFd << " nickname set to: " << nickname << std::endl;
 	_nickname = nickname;
 }
 
 void Client::setUsername(const std::string& username)
 {
-	std::cout << "Client " << _fd << " username set to: " << username << std::endl;
+	std::cout << "Client " << _clientFd << " username set to: " << username << std::endl;
 	_username = username;
 }
 
@@ -118,7 +118,7 @@ void Client::setAuthenticated(bool authenticated)
 {
 	_authenticated = authenticated;
 	if (authenticated)
-		std::cout << "Client " << _fd << " authenticated" << std::endl;
+		std::cout << "Client " << _clientFd << " authenticated" << std::endl;
 }
 
 void Client::setPasswordGiven(bool given)
@@ -130,44 +130,44 @@ void Client::setRegistered(bool registered)
 {
 	_registered = registered;
 	if (registered)
-		std::cout << "Client " << _fd << " (" << _nickname << ") registered" << std::endl;
+		std::cout << "Client " << _clientFd << " (" << _nickname << ") registered" << std::endl;
 }
 
-void Client::appendToRecvBuffer(const char* data, size_t size)
+void Client::appendToReceiveBuffer(const char* data, size_t size)
 {
-	_recvBuffer.append(data, size);
+	_receiveBuffer.append(data, size);
 }
 
 bool Client::extractCommand(std::string& command)
 {
-	size_t pos = _recvBuffer.find("\r\n");
+	size_t pos = _receiveBuffer.find("\r\n");
 	
 	if (pos == std::string::npos)
 	{
-		pos = _recvBuffer.find('\n');
+		pos = _receiveBuffer.find('\n');
 		if (pos == std::string::npos)
 			return (false);
 	}
 	
-	command = _recvBuffer.substr(0, pos);
+	command = _receiveBuffer.substr(0, pos);
 	
-	if (_recvBuffer[pos] == '\r' && pos + 1 < _recvBuffer.length() && _recvBuffer[pos + 1] == '\n')
-		_recvBuffer.erase(0, pos + 2);
+	if (_receiveBuffer[pos] == '\r' && pos + 1 < _receiveBuffer.length() && _receiveBuffer[pos + 1] == '\n')
+		_receiveBuffer.erase(0, pos + 2);
 	else
-		_recvBuffer.erase(0, pos + 1);
+		_receiveBuffer.erase(0, pos + 1);
 	
-	std::cout << "Command extracted from client " << _fd << ": [" << command << "]" << std::endl;
+	std::cout << "Command extracted from client " << _clientFd << ": [" << command << "]" << std::endl;
 	return (true);
 }
 
 void Client::appendToSendBuffer(const std::string& data)
 {
 	_sendBuffer.append(data);
-	std::cout << "Added " << data.length() << " bytes to send buffer for client " << _fd 
+	std::cout << "Added " << data.length() << " bytes to send buffer for client " << _clientFd 
 	          << " (total: " << _sendBuffer.length() << " bytes)" << std::endl;
 }
 
-void Client::consumeSendBuffer(size_t bytes)
+void Client::consumeFromSendBuffer(size_t bytes)
 {
 	if (bytes >= _sendBuffer.length())
 		_sendBuffer.clear();
@@ -180,23 +180,23 @@ void Client::clearSendBuffer()
 	_sendBuffer.clear();
 }
 
-void Client::addChannel(const std::string& channelName)
+void Client::joinChannel(const std::string& channelName)
 {
-	_channels.insert(channelName);
+	_joinedChannels.insert(channelName);
 	std::cout << "Client " << _nickname << " joined channel " << channelName 
-	          << " (total: " << _channels.size() << " channels)" << std::endl;
+	          << " (total: " << _joinedChannels.size() << " channels)" << std::endl;
 }
 
-void Client::removeChannel(const std::string& channelName)
+void Client::leaveChannel(const std::string& channelName)
 {
-	_channels.erase(channelName);
+	_joinedChannels.erase(channelName);
 	std::cout << "Client " << _nickname << " left channel " << channelName 
-	          << " (remaining: " << _channels.size() << " channels)" << std::endl;
+	          << " (remaining: " << _joinedChannels.size() << " channels)" << std::endl;
 }
 
 bool Client::isInChannel(const std::string& channelName) const
 {
-	return (_channels.find(channelName) != _channels.end());
+	return (_joinedChannels.find(channelName) != _joinedChannels.end());
 }
 
 std::string Client::getPrefix() const

@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   CommandHandler.hpp                                 :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: yaabdall <yaabdall@student.42.fr>          +#+  +:+       +#+        */
+/*   By: vgalmich <vgalmich@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/11/06 14:09:59 by vgalmich          #+#    #+#             */
-/*   Updated: 2025/11/14 19:09:45 by yaabdall         ###   ########.fr       */
+/*   Updated: 2025/12/19 16:03:02 by vgalmich         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,15 +29,15 @@ class CommandHandler
         CommandHandler(Server *server);
         
         // typedef pour pointeur vers fonctions membres de CommandHandler
-        typedef void (CommandHandler::*CommandFunction)(Client* client, const std::vector<std::string>&);
+        typedef void (CommandHandler::*CommandHandlerFunction)(Client* client, const std::vector<std::string>&);
         
-        void handleCommand(Client* client, const std::string &rawCommand);
+        void processCommand(Client* client, const std::string &rawCommand);
         
     private:
         Server *_server; // lien vers le serveur
         
         // Map des commandes vers leurs handlers
-        std::map<std::string, CommandFunction> _commandMap;
+        std::map<std::string, CommandHandlerFunction> _commandMap;
         
         // Initialiser la map
         void _initCommandMap();
@@ -70,7 +70,7 @@ class CommandHandler
         void cmdPing(Client* client, const std::vector<std::string> &params);
         
         // Helpers
-        void sendWelcome(Client* client);
+        void sendWelcomeMsg(Client* client);
         void sendNumericReply(Client* client, const std::string& numeric, const std::string& message);
         bool isValidNickname(const std::string& nickname);
         bool isValidChannelName(const std::string& name);

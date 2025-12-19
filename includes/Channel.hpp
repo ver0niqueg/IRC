@@ -15,15 +15,15 @@ class Channel
         ~Channel();
 
         // members + operators
-        bool addMember(Client* client, const std::string& key = "");
-        bool removeMember(Client* client);
+        bool addUser(Client* client, const std::string& key = "");
+        bool removeUser(Client* client);
         bool isMember(Client* client) const;
         bool addOperator(Client* client);
         bool removeOperator(Client* client);
         bool isOperator(Client* client) const;
 
         // modes
-        void setMode(char mode, bool enabled, Client* setter = NULL, const std::string& param = "");
+        void enableMode(char mode, bool enabled, Client* setter = NULL, const std::string& param = "");
         bool getMode(char mode) const;
 
         // key + limit
@@ -44,15 +44,15 @@ class Channel
 
         // getters
         std::string getName() const;
-        std::set<Client*> getMembers() const;
-        std::set<Client*> getOperators() const;
-        std::set<Client*> getInvited() const;
+        std::set<Client*> getMembersList() const;
+        std::set<Client*> getOperatorsList() const;
+        std::set<Client*> getInvitedList() const;
 
     private:
         std::string _name;
-        std::set<Client*> _members;
-        std::set<Client*> _operators;
-        std::set<Client*> _invited;
+        std::set<Client*> _membersList;
+        std::set<Client*> _operatorsList;
+        std::set<Client*> _invitedList;
         std::string _topic;
         std::map<char, bool> _modes; // i, t, k, l, o
         std::string _key;

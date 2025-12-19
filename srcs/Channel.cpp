@@ -15,41 +15,41 @@ Channel::Channel(const std::string& name)
 
 Channel::~Channel() {}
 
-bool Channel::addMember(Client* client, const std::string& key) {
+bool Channel::addUser(Client* client, const std::string& key) {
     if (_modes['k'] && _key != "" && key != _key)
         return false;
-    if (_modes['l'] && _limit > 0 && (int)_members.size() >= _limit)
+    if (_modes['l'] && _limit > 0 && (int)_membersList.size() >= _limit)
         return false;
-    if (_modes['i'] && _invited.find(client) == _invited.end())
+    if (_modes['i'] && _invitedList.find(client) == _invitedList.end())
         return false;
-    _members.insert(client);
+    _membersList.insert(client);
     return true;
 }
 
-bool Channel::removeMember(Client* client) {
-    return _members.erase(client) > 0;
+bool Channel::removeUser(Client* client) {
+    return _membersList.erase(client) > 0;
 }
 
 bool Channel::isMember(Client* client) const {
-    return _members.find(client) != _members.end();
+    return _membersList.find(client) != _membersList.end();
 }
 
 bool Channel::addOperator(Client* client) {
     if (!isMember(client))
         return false;
-    _operators.insert(client);
+    _operatorsList.insert(client);
     return true;
 }
 
 bool Channel::removeOperator(Client* client) {
-    return _operators.erase(client) > 0;
+    return _operatorsList.erase(client) > 0;
 }
 
 bool Channel::isOperator(Client* client) const {
-    return _operators.find(client) != _operators.end();
+    return _operatorsList.find(client) != _operatorsList.end();
 }
 
-void Channel::setMode(char mode, bool enabled, Client* setter, const std::string& param) {
+void Channel::enableMode(char mode, bool enabled, Client* setter, const std::string& param) {
     if (_modes.find(mode) == _modes.end())
         return;
         
@@ -118,7 +118,7 @@ std::string Channel::getTopic() const {
 bool Channel::invite(Client* operatorClient, Client* targetClient) {
     if (!isOperator(operatorClient))
         return false;
-    _invited.insert(targetClient);
+    _invitedList.insert(targetClient);
     return true;
 }
 
@@ -127,7 +127,7 @@ bool Channel::kick(Client* operatorClient, Client* targetClient, const std::stri
         return false;
     }
     (void)reason;
-    removeMember(targetClient);
+    removeUser(targetClient);
     removeOperator(targetClient);
     return true;
 }
@@ -136,14 +136,14 @@ std::string Channel::getName() const {
     return _name;
 }
 
-std::set<Client*> Channel::getMembers() const {
-    return _members;
+std::set<Client*> Channel::getMembersList() const {
+    return _membersList;
 }
 
-std::set<Client*> Channel::getOperators() const {
-    return _operators;
+std::set<Client*> Channel::getOperatorsList() const {
+    return _operatorsList;
 }
 
-std::set<Client*> Channel::getInvited() const {
-    return _invited;
+std::set<Client*> Channel::getInvitedList() const {
+    return _invitedList;
 }
