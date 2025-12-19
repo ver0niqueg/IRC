@@ -34,54 +34,55 @@ void CommandHandler::cmdPass(Client* client, const std::vector<std::string> &par
     }
 }
 
+// validate or update a client's nickname
 void CommandHandler::cmdNick(Client* client, const std::vector<std::string> &params)
 {
-    if (params.empty())
+    if (params.empty()) 
     {
         sendNumericReply(client, ERR_NONICKNAMEGIVEN, ":No nickname given");
         return;
     }
-    
+
     const std::string& newNick = params[0];
-    
-    if (!isValidNickname(newNick))
-    {
+
+    if (!isValidNickname(newNick)) {
         sendNumericReply(client, ERR_ERRONEUSNICKNAME, newNick + " :Erroneous nickname");
         return;
     }
-    
+
     Client* existingClient = _server->getClientByNick(newNick);
-    if (existingClient && existingClient != client)
+    if (existingClient && existingClient != client) 
     {
         sendNumericReply(client, ERR_NICKNAMEINUSE, newNick + " :Nickname is already in use");
         return;
     }
-    
+
     std::string oldNick = client->getNickname();
-    
-    if (client->isRegistered() && !oldNick.empty())
+
+    if (client->isRegistered() && !oldNick.empty()) 
     {
         const std::set<std::string>& channels = client->getJoinedChannels();
-        for (std::set<std::string>::const_iterator it = channels.begin(); it != channels.end(); ++it)
+        for (std::set<std::string>::const_iterator it = channels.begin(); it != channels.end(); ++it) 
         {
             Channel* channel = _server->getChannel(*it);
-            if (channel)
+            if (channel) 
             {
-                std::string nickChange = client->getPrefix() + " NICK :" + newNick + "\r\n";
-                _server->broadcastToChannel(*it, nickChange, -1);
+                std::string nickChangeMsg = client->getPrefix() + " NICK :" + newNick + "\r\n";
+                _server->broadcastToChannel(*it, nickChangeMsg, -1);
             }
         }
+        std::cout << "Client " << oldNick << " changed nickname to " << newNick << std::endl;
     }
-    
+
     client->setNickname(newNick);
-    
-    if (!client->getUsername().empty() && client->isPasswordGiven() && !client->isRegistered())
-    {
+
+    if (!client->getUsername().empty() && client->isPasswordGiven() && !client->isRegistered()) {
         client->setRegistered(true);
         sendWelcomeMsg(client);
     }
 }
 
+// register a new client with username and realname
 void CommandHandler::cmdUser(Client* client, const std::vector<std::string> &params)
 {
     if (client->isRegistered())
@@ -115,6 +116,7 @@ void CommandHandler::cmdUser(Client* client, const std::vector<std::string> &par
     }
 }
 
+// handle client quit command
 void CommandHandler::cmdQuit(Client* client, const std::vector<std::string> &params)
 {
     std::string reason = "Client quit";
@@ -137,6 +139,7 @@ void CommandHandler::cmdQuit(Client* client, const std::vector<std::string> &par
     }
 }
 
+// respond to PING command from client
 void CommandHandler::cmdPing(Client* client, const std::vector<std::string> &params)
 {
     if (params.empty())
