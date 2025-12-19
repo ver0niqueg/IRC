@@ -29,7 +29,7 @@ void CommandHandler::_initCommandMap()
     _commandMap["PING"] = &CommandHandler::cmdPing;
 }
 
-// parse an input from a client (for ex: "PRIVMSG #channel :Hello everyone!")
+// parses an input from a client (for ex: "PRIVMSG #channel :Hello everyone!")
 void CommandHandler::_parseInput(const std::string &input, std::string &command, std::vector<std::string> &params)
 {
     params.clear();
@@ -51,11 +51,11 @@ void CommandHandler::_parseInput(const std::string &input, std::string &command,
     {
         if (token[0] == ':')
         {
-            std::string trailing = token.substr(1);
+            std::string msg = token.substr(1);
             std::string rest;
             std::getline(iss, rest);
-            trailing += rest;
-            params.push_back(trailing);
+            msg += rest;
+            params.push_back(msg);
             break;
         }
         else
@@ -63,6 +63,7 @@ void CommandHandler::_parseInput(const std::string &input, std::string &command,
     }
 }
 
+// handles a command from a client
 void CommandHandler::processCommand(Client* client, const std::string &input)
 {
     if (!client || input.empty())
@@ -91,6 +92,7 @@ void CommandHandler::processCommand(Client* client, const std::string &input)
     }
 }
 
+// sends a numeric IRC reply according to the IRC protocol (RFC)
 void CommandHandler::sendNumericReply(Client* client, const std::string& numeric, const std::string& message)
 {
     std::stringstream ss;
@@ -106,41 +108,42 @@ void CommandHandler::sendNumericReply(Client* client, const std::string& numeric
     client->sendMessage(ss.str());
 }
 
+// sends all the mandatory IRC welcome msgs to a client after a successful connection & registration
 void CommandHandler::sendWelcomeMsg(Client* client)
 {
-    std::stringstream ss;
-    ss.str("");
-    ss << ":Welcome to the Internet Relay Network " << client->getPrefix();
-    sendNumericReply(client, RPL_WELCOME, ss.str());
-    
-    ss.str("");
-    ss << ":Your host is " << _server->getServerName() << ", running version 1.0";
-    sendNumericReply(client, RPL_YOURHOST, ss.str());
+    const std::string serverVersion = "1.0";
+    const std::string serverCreation = "This server was created today";
+    const std::string serverModes = "o itkol";
 
-    sendNumericReply(client, RPL_CREATED, ":This server was created today");
-    
-    ss.str("");
-    ss << _server->getServerName() << " 1.0 o itkol";
-    sendNumericReply(client, RPL_MYINFO, ss.str());
+    std::string welcomeMsg = ":Welcome to the Internet Relay Network " + client->getPrefix();
+    sendNumericReply(client, RPL_WELCOME, welcomeMsg);
+
+    std::string yourHostMsg = ":Your host is " + _server->getServerName() + ", running version " + serverVersion;
+    sendNumericReply(client, RPL_YOURHOST, yourHostMsg);
+
+    sendNumericReply(client, RPL_CREATED, ":" + serverCreation);
+
+    std::string myInfoMsg = _server->getServerName() + " " + serverVersion + " " + serverModes;
+    sendNumericReply(client, RPL_MYINFO, myInfoMsg);
 }
 
 bool CommandHandler::isValidNickname(const std::string& nickname)
 {
+    static const std::string allowedSpecial = "-_[]{}\\|^";
+
     if (nickname.empty() || nickname.length() > 9)
         return false;
-    
+
     if (!std::isalpha(nickname[0]))
         return false;
-    
+
     for (size_t i = 0; i < nickname.length(); ++i)
     {
         char c = nickname[i];
-        if (!std::isalnum(c) && c != '-' && c != '_' && 
-            c != '[' && c != ']' && c != '{' && c != '}' && 
-            c != '\\' && c != '|' && c != '^')
+        if (!std::isalnum(c) && allowedSpecial.find(c) == std::string::npos)
             return false;
     }
-    
+
     return true;
 }
 
