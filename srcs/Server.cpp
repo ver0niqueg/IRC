@@ -69,15 +69,16 @@ void Server::_initSocket()
 	std::cout << "   ✓ Socket created (fd: " << _serverSocket << ")" << std::endl;
 	
 
-	int opt = 1;
+	int opt = 1; // option we want to activate
+	// config an option on the socket: here we set SO_REUSEADDR to reuse the port immediately after program exit
 	if (setsockopt(_serverSocket, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt)) == -1)
 	{
 		close(_serverSocket);
 		throw std::runtime_error(std::string("setsockopt() failed: ") + strerror(errno));
 	}
-	std::cout << "   ✓ Socket options set (SO_REUSEADDR)" << std::endl;
+	std::cout << "   ✓ Socket option set (SO_REUSEADDR)" << std::endl;
 	
-	struct sockaddr_in serverAddr;
+	struct sockaddr_in serverAddr; // server adress struct
 	std::memset(&serverAddr, 0, sizeof(serverAddr));
 	serverAddr.sin_family = AF_INET;
 	serverAddr.sin_addr.s_addr = INADDR_ANY;
