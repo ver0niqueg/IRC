@@ -11,6 +11,7 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 
+// server constructor
 Server::Server(int port, const std::string& password)
 	: _port(port),
 	  _password(password),
@@ -29,6 +30,7 @@ Server::Server(int port, const std::string& password)
 	std::cout << "Server object constructed successfully" << std::endl;
 }
 
+// server destructor
 Server::~Server()
 {
 	std::cout << "Server destructor called..." << std::endl;
@@ -39,7 +41,7 @@ Server::~Server()
 	
 	for (std::map<int, Client*>::iterator it = _clients.begin(); it != _clients.end(); ++it)
 	{
-		close(it->first);
+		close(it->first); // close the client socket (fd)
 		delete it->second;
 	}
 	_clients.clear();
@@ -48,7 +50,6 @@ Server::~Server()
 		delete it->second;
 	_channels.clear();
 	
-
 	if (_serverSocket != -1)
 	{
 		close(_serverSocket);
@@ -57,9 +58,10 @@ Server::~Server()
 	std::cout << "Server object destroyed" << std::endl;
 }
 
+// server socket init
 void Server::_initSocket()
 {
-	std::cout << "Setting up server socket..." << std::endl;
+	std::cout << "Initializing server socket..." << std::endl;
 	
 	_serverSocket = socket(AF_INET, SOCK_STREAM, 0);
 	if (_serverSocket == -1)
