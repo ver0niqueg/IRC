@@ -7,8 +7,7 @@
 #include <poll.h>
 #include <stdexcept>
 
-// Forward declarations pour éviter les dépendances circulaires
-// Ok si on utilise des pointeurs ou références, pas des objets complets
+// forward declarations
 class Client;
 class Channel;
 class CommandHandler;
@@ -16,71 +15,70 @@ class CommandHandler;
 class Server
 {
 	private:
-		// Configuration de base
+		// server basic config
 		int					_port;
 		std::string			_password;
 		std::string			_serverName;
 	
-		// Socket serveur (listening socket)
+		// listening socket (to accept new connections)
 		int					_serverSocket;
 	
-		// Gestion des clients - Map : fd -> Client* pour accès rapide
+		// clients' list/map
 		std::map<int, Client*>	_clients;
 	
-		// Gestion des channels - Map : nom du channel -> Channel* pour accès rapide
+		// channels' list/map
 		std::map<std::string, Channel*>	_channels;
 	
-		// Surveillance des événements réseau
-		std::vector<struct pollfd>	_pollFds; // Liste des sockets à surveiller
+		// sockets' list to check for events
+		std::vector<struct pollfd>	_pollFds;
 	
 		// Command handler
 		CommandHandler*		_commandHandler;
 	
-		// Etat du serveur
-		bool				_isrunning; // true = serveur actif
+		// server running state (true = is running)
+		bool				_isrunning;
 	
-		// Méthodes privées (utilitaires internes)
-		void				_setupServerSocket();
+		// private methods (internal utilities)
+		void				_initSocket();
 		void				_setNonBlocking(int fd);
-		void				_acceptClientConnection();
-		void				_processClientData(int fd);
+		void				_acceptNewConnection();
+		void				_readClientData(int fd);
 		void				_sendPendingData(int fd);
+		void				_setPollOut(int fd);
+		void				_unsetPollOut(int fd);
+		void				_removePollFd(int fd);
 		void				_disconnectClient(int fd);
 		void				_sendMsgToClient(int fd, const std::string& message);
-		void				_removePollFd(int fd);
-		void				_enablePollOut(int fd);
-		void				_disablePollOut(int fd);
-	
-		// Empêcher la copie
+		
+		// avoid copying
 		Server(const Server& other);
 		Server& operator=(const Server& other);
 
 	public:
-		// Constructeur et destructeur
 		Server(int port, const std::string& password);
 		~Server();
 	
-		// Méthodes publiques principales
-		void				start();
-		void				stop();
-		void				printStats() const;
+		// main public methods
+		void				run();
+		void				shutdown();
+		void				displayStats() const;
 	
-		// Getters (ne modifient pas l'objet)
+		// getters
 		int					getPort() const;
 		const std::string&	getPassword() const;
 		const std::string&	getServerName() const;
 	
-		// Gestion des clients
+		// clients management
 		Client*				getClient(int fd);
 		Client*				getClientByNick(const std::string& nickname);
 		void				removeClient(int fd);
 	
-		// Gestion des channels
+		// channels management
 		Channel*			getChannel(const std::string& name);
 		Channel*			createChannel(const std::string& name);
 		void				removeChannel(const std::string& name);
 	
-		// Broadcasting
+		// broadcasting
 		void				broadcastToChannel(const std::string& channelName, 
 										   	const std::string& message, 
 										   	int excludeFd = -1);

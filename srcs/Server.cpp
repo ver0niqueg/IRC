@@ -19,20 +19,20 @@ Server::Server(int port, const std::string& password)
 	  _commandHandler(NULL),
 	  _isrunning(false)
 {
-	std::cout << "Constructing Server object..." << std::endl;
+	std::cout << "Server constructor called..." << std::endl;
 	if (port <= 0 || port > 65535)
-		throw std::runtime_error("Invalid port number");
+		throw std::runtime_error("Error: Invalid port number");
 	if (password.empty())
-		throw std::runtime_error("Password cannot be empty");
-	_setupServerSocket();
+		throw std::runtime_error("Error: Password cannot be empty");
+	_initSocket();
 	_commandHandler = new CommandHandler(this);
 	std::cout << "Server object constructed successfully" << std::endl;
 }
 
 Server::~Server()
 {
-	std::cout << "Destroying Server object..." << std::endl;
-	stop();
+	std::cout << "Server destructor called..." << std::endl;
+	shutdown();
 	
 	delete _commandHandler;
 	_commandHandler = NULL;
@@ -57,7 +57,7 @@ Server::~Server()
 	std::cout << "Server object destroyed" << std::endl;
 }
 
-void Server::_setupServerSocket()
+void Server::_initSocket()
 {
 	std::cout << "Setting up server socket..." << std::endl;
 	
@@ -132,7 +132,7 @@ const std::string& Server::getServerName() const
 	return (_serverName);
 }
 
-void Server::start()
+void Server::run()
 {
 	std::cout << "Starting server event loop..." << std::endl;
 	_isrunning = true;
@@ -153,7 +153,7 @@ void Server::start()
 			if (_pollFds[i].fd == _serverSocket)
 			{
 				if (_pollFds[i].revents & POLLIN)
-					_acceptClientConnection();
+					_acceptNewConnection();
 			}
 			else
 			{
@@ -179,7 +179,7 @@ void Server::start()
 				}
 				
 				if (_pollFds[i].revents & POLLIN)
-					_processClientData(clientFd);
+					_readClientData(clientFd);
 				
 				if (_pollFds[i].revents & POLLOUT)
 					_sendPendingData(clientFd);
@@ -189,7 +189,7 @@ void Server::start()
 	std::cout << "Server event loop stopped" << std::endl;
 }
 
-void Server::stop()
+void Server::shutdown()
 {
 	if (_isrunning)
 	{
@@ -198,7 +198,7 @@ void Server::stop()
 	}
 }
 
-void Server::printStats() const
+void Server::displayStats() const
 {
 	std::cout << "\nServer Statistics:" << std::endl;
 	std::cout << "  Clients connected: " << _clients.size() << std::endl;
@@ -289,7 +289,7 @@ void Server::broadcastToChannel(const std::string& channelName, const std::strin
 		if (*it && (*it)->getClientFd() != excludeFd)
 		{
 			(*it)->sendMessage(message);
-			_enablePollOut((*it)->getClientFd());
+			_setPollOut((*it)->getClientFd());
 		}
 	}
 	
@@ -297,7 +297,7 @@ void Server::broadcastToChannel(const std::string& channelName, const std::strin
 	          << (message.length() > 50 ? "..." : "") << std::endl;
 }
 
-void Server::_acceptClientConnection()
+void Server::_acceptNewConnection()
 {
 	struct sockaddr_in clientAddr;
 	socklen_t clientAddrLen = sizeof(clientAddr);
@@ -345,7 +345,7 @@ void Server::_acceptClientConnection()
 	}
 }
 
-void Server::_processClientData(int fd)
+void Server::_readClientData(int fd)
 {
 	char buffer[4096];
 	ssize_t bytesRead;
@@ -431,7 +431,7 @@ void Server::_disconnectClient(int fd)
 		std::cout << "   Warning: Client " << fd << " not found in client map" << std::endl;
 	
 	_removePollFd(fd);
-	shutdown(fd, SHUT_RDWR);
+	::shutdown(fd, SHUT_RDWR);
 	
 	if (close(fd) == -1)
 		std::cerr << "   close() error: " << strerror(errno) << std::endl;
@@ -473,7 +473,7 @@ void Server::_sendPendingData(int fd)
 	const std::string& sendBuffer = client->getSendBuffer();
 	if (sendBuffer.empty())
 	{
-		_disablePollOut(fd);
+		_unsetPollOut(fd);
 		return;
 	}
 	
@@ -484,7 +484,7 @@ void Server::_sendPendingData(int fd)
 		client->consumeFromSendBuffer(bytesSent);
 		
 		if (client->getSendBuffer().empty())
-			_disablePollOut(fd);
+			_unsetPollOut(fd);
 	}
 	else if (bytesSent == -1)
 	{
@@ -496,7 +496,7 @@ void Server::_sendPendingData(int fd)
 	}
 }
 
-void Server::_enablePollOut(int fd)
+void Server::_setPollOut(int fd)
 {
 	for (std::vector<struct pollfd>::iterator it = _pollFds.begin(); it != _pollFds.end(); ++it)
 	{
@@ -513,7 +513,7 @@ void Server::_enablePollOut(int fd)
 	std::cerr << "Warning: fd " << fd << " not found in _enablePollOut" << std::endl;
 }
 
-void Server::_disablePollOut(int fd)
+void Server::_unsetPollOut(int fd)
 {
 	for (std::vector<struct pollfd>::iterator it = _pollFds.begin(); it != _pollFds.end(); ++it)
 	{
