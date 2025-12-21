@@ -66,7 +66,7 @@ void Server::_initSocket()
 	_serverSocket = socket(AF_INET, SOCK_STREAM, 0);
 	if (_serverSocket == -1)
 		throw std::runtime_error(std::string("socket() failed: ") + strerror(errno));
-	std::cout << "   ✓ Socket created (fd: " << _serverSocket << ")" << std::endl;
+	std::cout << "Socket created (fd: " << _serverSocket << ") ✓" << std::endl;
 	
 
 	int opt = 1; // option we want to activate
@@ -80,40 +80,41 @@ void Server::_initSocket()
 	
 	struct sockaddr_in serverAddr; // server adress struct
 	std::memset(&serverAddr, 0, sizeof(serverAddr));
-	serverAddr.sin_family = AF_INET;
-	serverAddr.sin_addr.s_addr = INADDR_ANY;
-	serverAddr.sin_port = htons(_port);
+	serverAddr.sin_family = AF_INET; // IPv4
+	serverAddr.sin_addr.s_addr = INADDR_ANY; // bind to all interfaces
+	serverAddr.sin_port = htons(_port); // set port (network byte order)
 
 	if (bind(_serverSocket, (struct sockaddr*)&serverAddr, sizeof(serverAddr)) == -1)
 	{
 		close(_serverSocket);
 		throw std::runtime_error(std::string("bind() failed: ") + strerror(errno));
 	}
-	std::cout << "   ✓ Socket bound to 0.0.0.0:" << _port << std::endl;
+	std::cout << "Socket bound to 0.0.0.0:" << _port << " ✓" << std::endl;
 	
 	if (listen(_serverSocket, SOMAXCONN) < 0)
 	{
 		close(_serverSocket);
 		throw std::runtime_error(std::string("listen() failed: ") + strerror(errno));
 	}
-	std::cout << "   ✓ Socket listening (backlog: SOMAXCONN)" << std::endl;
+	std::cout << "Socket listening (backlog: SOMAXCONN) ✓" << std::endl;
 	
 	_setNonBlocking(_serverSocket);
-	std::cout << "   ✓ Socket set to non-blocking mode" << std::endl;
+	std::cout << "Socket set to non-blocking mode ✓" << std::endl;
 	
-	struct pollfd serverPollFd;
-	serverPollFd.fd = _serverSocket;
-	serverPollFd.events = POLLIN;
-	serverPollFd.revents = 0;
-	_pollFds.push_back(serverPollFd);
-	std::cout << "   ✓ Server socket added to poll set" << std::endl;
+	struct pollfd serverPollFd; // checking server socket (fd) for events
+	serverPollFd.fd = _serverSocket; // server socket fd
+	serverPollFd.events = POLLIN; // we want to read incoming connections
+	serverPollFd.revents = 0; // no events yet
+	_pollFds.push_back(serverPollFd); // add to poll fds list
+	std::cout << "Server socket added to poll set ✓" << std::endl;
 	
-	std::cout << "Server socket setup complete" << std::endl;
+	std::cout << "Server socket initialization complete" << std::endl;
 }
 
+// set a socket to non-blocking mode => imporant to handle multiple clients
 void Server::_setNonBlocking(int fd)
 {
-	int flags = fcntl(fd, F_GETFL, 0);
+	int flags = fcntl(fd, F_GETFL, 0); // options flags of the fd
 	if (flags == -1)
 		throw std::runtime_error(std::string("fcntl(F_GETFL) failed: ") + strerror(errno));
 	if (fcntl(fd, F_SETFL, flags | O_NONBLOCK) == -1)
@@ -149,42 +150,43 @@ void Server::run()
 			std::cerr << "poll() error: " << strerror(errno) << std::endl;
 			break;
 		}
+		// for each fd, check for events
 		for (size_t i = 0; i < _pollFds.size(); ++i)
 		{
 			if (_pollFds[i].revents == 0)
 				continue;
-			if (_pollFds[i].fd == _serverSocket)
+			if (_pollFds[i].fd == _serverSocket) // if it is the server socket
 			{
-				if (_pollFds[i].revents & POLLIN)
+				if (_pollFds[i].revents & POLLIN) // if a client is trying to connect
 					_acceptNewConnection();
 			}
-			else
+			else // if it is a client socket
 			{
 				int clientFd = _pollFds[i].fd;
 				
-				if (_pollFds[i].revents & POLLHUP)
+				if (_pollFds[i].revents & POLLHUP) // if a client disconnect
 				{
 					std::cout << "Client " << clientFd << " hung up (POLLHUP)" << std::endl;
 					_disconnectClient(clientFd);
 					break;
 				}
-				if (_pollFds[i].revents & POLLERR)
+				if (_pollFds[i].revents & POLLERR) // if a client socket error occurred
 				{
 					std::cerr << "Socket error on client " << clientFd << " (POLLERR)" << std::endl;
 					_disconnectClient(clientFd);
 					break;
 				}
-				if (_pollFds[i].revents & POLLNVAL)
+				if (_pollFds[i].revents & POLLNVAL) // if an invalid fd
 				{
 					std::cerr << "Invalid fd " << clientFd << " (POLLNVAL)" << std::endl;
 					_disconnectClient(clientFd);
 					break;
 				}
 				
-				if (_pollFds[i].revents & POLLIN)
+				if (_pollFds[i].revents & POLLIN) // if there is data to read from client
 					_readClientData(clientFd);
 				
-				if (_pollFds[i].revents & POLLOUT)
+				if (_pollFds[i].revents & POLLOUT) // if ready to send data to client
 					_sendPendingData(clientFd);
 			}
 		}
@@ -203,12 +205,12 @@ void Server::shutdown()
 
 void Server::displayStats() const
 {
-	std::cout << "\nServer Statistics:" << std::endl;
-	std::cout << "  Clients connected: " << _clients.size() << std::endl;
-	std::cout << "  Channels active: " << _channels.size() << std::endl;
-	std::cout << "  Poll fds: " << _pollFds.size() << " (1 server + " 
-	          << (_pollFds.size() - 1) << " clients)" << std::endl;
-	std::cout << "  Server running: " << (_isrunning ? "Yes" : "No") << std::endl;
+    std::cout << "\n=== Server Statistics ===" << std::endl;
+    std::cout << "  Server running   : " << (_isrunning ? "Yes" : "No") << std::endl;
+    std::cout << "  Clients connected: " << _clients.size() << std::endl;
+    std::cout << "  Channels active  : " << _channels.size() << std::endl;
+    std::cout << "  Poll fds         : " << _pollFds.size()
+              << " (1 server + " << (_pollFds.size() > 0 ? _pollFds.size() - 1 : 0) << " clients)" << std::endl;
 }
 
 Client* Server::getClient(int fd)
@@ -232,7 +234,13 @@ Client* Server::getClientByNick(const std::string& nickname)
 
 void Server::removeClient(int fd)
 {
-	(void)fd;
+	std::map<int, Client*>::iterator it = _clients.find(fd);
+	if (it != _clients.end())
+	{
+		close(it->first);
+		delete it->second;
+		_clients.erase(it);
+	} 
 }
 
 Channel* Server::getChannel(const std::string& name)
