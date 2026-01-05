@@ -256,13 +256,13 @@ Channel* Server::createChannel(const std::string& name)
 	Channel* existingChannel = getChannel(name);
 	if (existingChannel)
 	{
-		std::cout << "Channel " << name << " already exists" << std::endl;
+		std::cout << "Channel [" << name << "] already exists" << std::endl;
 		return (existingChannel);
 	}
 
 	Channel* newChannel = new Channel(name);
 	_channels[name] = newChannel;
-	std::cout << "Channel " << name << " created (" 
+	std::cout << "Channel [" << name << "] created (" 
 	          << _channels.size() << " channels active)" << std::endl;
 	return (newChannel);
 }
@@ -275,11 +275,11 @@ void Server::removeChannel(const std::string& name)
 	{
 		delete it->second;
 		_channels.erase(it);
-		std::cout << "Channel " << name << " removed (" 
+		std::cout << "Channel [" << name << "] removed (" 
 		          << _channels.size() << " channels remaining)" << std::endl;
 	}
 	else
-		std::cout << "Channel " << name << " not found" << std::endl;
+		std::cout << "Channel [" << name << "] not found" << std::endl;
 }
 
 // send a message to all clients in a channel, excluding a specific fd if provided
@@ -288,7 +288,7 @@ void Server::broadcastToChannel(const std::string& channelName, const std::strin
 	Channel* channel = getChannel(channelName); // get the channel object
 	if (!channel)
 	{
-		std::cerr << "Channel " << channelName << " not found for broadcast" << std::endl;
+		std::cerr << "Channel [" << channelName << "] not found for broadcast" << std::endl;
 		return;
 	}
 	
@@ -331,7 +331,7 @@ void Server::_acceptNewConnection()
 		inet_ntop(AF_INET, &clientAddr.sin_addr, clientIP, INET_ADDRSTRLEN);
 		int clientPort = ntohs(clientAddr.sin_port);
 		
-		std::cout << "New connection from " << clientIP << ":" << clientPort 
+		std::cout << "New connection from [" << clientIP << "]:" << clientPort 
 		          << " (fd: " << clientFd << ")" << std::endl;
 		// set the client socket to non-blocking mode
 		try
@@ -379,10 +379,10 @@ void Server::_readClientData(int fd)
 			Client* client = getClient(fd);
 			if (client)
 			{
-				client->appendToReceiveBuffer(buffer, bytesRead);
+				client->appendToReceiveBuffer(buffer, bytesRead); // add data to client's receive buffer
 				
 				std::string command;
-				while (client->extractCommand(command))
+				while (client->extractCommand(command)) // read complete commands from buffer
 				{
 					if (_commandHandler)
 						_commandHandler->processCommand(client, command);
@@ -392,7 +392,7 @@ void Server::_readClientData(int fd)
 		else if (bytesRead == 0)
 		{
 
-			std::cout << "Client " << fd << " closed connection" << std::endl;
+			std::cout << "Client [" << fd << "] closed connection" << std::endl;
 			_disconnectClient(fd);
 			break;
 		}
@@ -404,7 +404,7 @@ void Server::_readClientData(int fd)
 				continue;
 			else
 			{
-				std::cerr << "recv() error on client " << fd << ": " << strerror(errno) << std::endl;
+				std::cerr << "recv() error on client [" << fd << "]: " << strerror(errno) << std::endl;
 				_disconnectClient(fd);
 				break;
 			}
@@ -412,9 +412,10 @@ void Server::_readClientData(int fd)
 	}
 }
 
+// handle properly the disconnection of a client (delete client object, remove from lists, close socket)
 void Server::_disconnectClient(int fd)
 {
-	std::cout << "Disconnecting client " << fd << std::endl;
+	std::cout << "Disconnecting client... " << fd << std::endl;
 	
 	std::map<int, Client*>::iterator it = _clients.find(fd);
 	if (it != _clients.end())
@@ -423,7 +424,7 @@ void Server::_disconnectClient(int fd)
 		{
 			std::string nickname = it->second->getNickname();
 			if (!nickname.empty())
-				std::cout << "   Client nickname: " << nickname << std::endl;
+				std::cout << "   Client nickname: [" << nickname << "]" << std::endl;
 			
 			const std::set<std::string>& channels = it->second->getJoinedChannels();
 			for (std::set<std::string>::const_iterator chanIt = channels.begin(); chanIt != channels.end(); ++chanIt)
@@ -436,39 +437,38 @@ void Server::_disconnectClient(int fd)
 					chan->removeUser(it->second);
 					chan->removeOperator(it->second);
 				}
-			}
-			
-			delete it->second;
+			}			
+			delete it->second; // delete the Client object
 		}
-		
-		_clients.erase(it);
+		_clients.erase(it); // remove from clients map
 		std::cout << "   ✓ Client removed from client list" << std::endl;
 	}
 	else
-		std::cout << "   Warning: Client " << fd << " not found in client map" << std::endl;
+		std::cout << "   Warning: Client [" << fd << "] not found in client map" << std::endl;
 	
-	_removePollFd(fd);
-	::shutdown(fd, SHUT_RDWR);
+	_removePollFd(fd); // clean up poll fds list
+	::shutdown(fd, SHUT_RDWR); // shutdown the socket
 	
 	if (close(fd) == -1)
 		std::cerr << "   close() error: " << strerror(errno) << std::endl;
 	else
 		std::cout << "   ✓ Socket closed" << std::endl;
 	
-	std::cout << "Client " << fd << " disconnected (" 
-	          << _clients.size() << " clients remaining)" << std::endl;
+	std::cout << "Client [" << fd << "] disconnected (" 
+			<< _clients.size() << " remaining)" << std::endl;
 }
 
+// send a message immediately to a client via its socket
 void Server::_sendMsgToClient(int fd, const std::string& message)
 {
 	ssize_t bytesSent = send(fd, message.c_str(), message.length(), 0);
 	if (bytesSent == -1)
 	{
 		if (errno == EWOULDBLOCK || errno == EAGAIN)
-			std::cerr << "Socket buffer full for client " << fd << ", message should be queued" << std::endl;
+			std::cerr << "Socket buffer full for client [" << fd << "], message should be queued" << std::endl;
 		else
 		{
-			std::cerr << "send() error on client " << fd << ": " << strerror(errno) << std::endl;
+			std::cerr << "send() error on client [" << fd << "]: " << strerror(errno) << std::endl;
 			_disconnectClient(fd);
 		}
 	}
@@ -478,12 +478,13 @@ void Server::_sendMsgToClient(int fd, const std::string& message)
 		std::cout << "Sent " << bytesSent << " bytes to client " << fd << std::endl;
 }
 
+// handle pending data to send to a client
 void Server::_sendPendingData(int fd)
 {
 	Client* client = getClient(fd);
 	if (!client)
 	{
-		std::cerr << "Client " << fd << " not found in _sendPendingData" << std::endl;
+		std::cerr << "Client [" << fd << "] not found in _sendPendingData" << std::endl;
 		return;
 	}
 	
@@ -497,7 +498,7 @@ void Server::_sendPendingData(int fd)
 	ssize_t bytesSent = send(fd, sendBuffer.c_str(), sendBuffer.length(), 0);
 	if (bytesSent > 0)
 	{
-		std::cout << "Sent " << bytesSent << " bytes to client " << fd << std::endl;
+		std::cout << "Sent " << bytesSent << " bytes to client [" << fd << "]" << std::endl;
 		client->consumeFromSendBuffer(bytesSent);
 		
 		if (client->getSendBuffer().empty())
@@ -507,12 +508,13 @@ void Server::_sendPendingData(int fd)
 	{
 		if (errno != EWOULDBLOCK && errno != EAGAIN)
 		{
-			std::cerr << "send() error: " << strerror(errno) << std::endl;
+			std::cerr << "send() error on client [" << fd << "]: " << strerror(errno) << std::endl;
 			_disconnectClient(fd);
 		}
 	}
 }
 
+// enable POLLOUT event for a client fd
 void Server::_setPollOut(int fd)
 {
 	for (std::vector<struct pollfd>::iterator it = _pollFds.begin(); it != _pollFds.end(); ++it)
@@ -522,14 +524,15 @@ void Server::_setPollOut(int fd)
 			if (!(it->events & POLLOUT))
 			{
 				it->events |= POLLOUT;
-				std::cout << "   ✓ POLLOUT enabled for fd " << fd << std::endl;
+				std::cout << "   ✓ POLLOUT enabled for fd [" << fd << "]" << std::endl;
 			}
 			return;
 		}
 	}
-	std::cerr << "Warning: fd " << fd << " not found in _enablePollOut" << std::endl;
+	std::cerr << "Warning: fd [" << fd << "] not found in _setPollOut" << std::endl;
 }
 
+// disable POLLOUT event for a client fd
 void Server::_unsetPollOut(int fd)
 {
 	for (std::vector<struct pollfd>::iterator it = _pollFds.begin(); it != _pollFds.end(); ++it)
@@ -539,14 +542,15 @@ void Server::_unsetPollOut(int fd)
 			if (it->events & POLLOUT)
 			{
 				it->events &= ~POLLOUT;
-				std::cout << "   ✓ POLLOUT disabled for fd " << fd << std::endl;
+				std::cout << "   ✓ POLLOUT disabled for fd [" << fd << "]" << std::endl;
 			}
 			return;
 		}
 	}
-	std::cerr << "Warning: fd " << fd << " not found in _disablePollOut" << std::endl;
+	std::cerr << "Warning: fd [" << fd << "] not found in _unsetPollOut" << std::endl;
 }
 
+// remove a fd from the poll fds list
 void Server::_removePollFd(int fd)
 {
 	for (std::vector<struct pollfd>::iterator it = _pollFds.begin(); it != _pollFds.end(); ++it)
@@ -554,9 +558,9 @@ void Server::_removePollFd(int fd)
 		if (it->fd == fd)
 		{
 			_pollFds.erase(it);
-			std::cout << "   ✓ File descriptor " << fd << " removed from poll set" << std::endl;
+			std::cout << "   ✓ File descriptor [" << fd << "] removed from poll set" << std::endl;
 			return;
 		}
 	}
-	std::cerr << "Warning: fd " << fd << " not found in poll set" << std::endl;
+	std::cerr << "Warning: fd [" << fd << "] not found in poll set" << std::endl;
 }
