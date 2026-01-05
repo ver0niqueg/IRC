@@ -282,9 +282,10 @@ void Server::removeChannel(const std::string& name)
 		std::cout << "Channel " << name << " not found" << std::endl;
 }
 
+// send a message to all clients in a channel, excluding a specific fd if provided
 void Server::broadcastToChannel(const std::string& channelName, const std::string& message, int excludeFd)
 {
-	Channel* channel = getChannel(channelName);
+	Channel* channel = getChannel(channelName); // get the channel object
 	if (!channel)
 	{
 		std::cerr << "Channel " << channelName << " not found for broadcast" << std::endl;
@@ -292,45 +293,47 @@ void Server::broadcastToChannel(const std::string& channelName, const std::strin
 	}
 	
 	std::set<Client*> members = channel->getMembers();
-	std::cout << "Broadcasting to channel " << channelName 
-	          << " (" << members.size() << " members)" << std::endl;
+	std::cout << "Broadcasting to channel [" << channelName << "] with " 
+			<< members.size() << " members" << std::endl;
 	
 	for (std::set<Client*>::iterator it = members.begin(); it != members.end(); ++it)
 	{
-		if (*it && (*it)->getClientFd() != excludeFd)
+		if (*it && (*it)->getClientFd() != excludeFd) // if client fd is different from excluded
 		{
-			(*it)->sendMessage(message);
-			_setPollOut((*it)->getClientFd());
+			(*it)->sendMessage(message); // add the message to the client's send buffer
+			_setPollOut((*it)->getClientFd()); // check socket is ready to send data
 		}
 	}
-	
 	std::cout << "   ✓ Message broadcasted: " << message.substr(0, 50) 
-	          << (message.length() > 50 ? "..." : "") << std::endl;
+	          << (message.length() > 50 ? "..." : "") << std::endl; // truncate the message if too long
 }
 
+// handle new incoming connections
 void Server::_acceptNewConnection()
 {
-	struct sockaddr_in clientAddr;
-	socklen_t clientAddrLen = sizeof(clientAddr);
+	struct sockaddr_in clientAddr; // IP + port of the connecting client
+	socklen_t clientAddrLen = sizeof(clientAddr); // size of the struct
 	while (true)
 	{
-		int clientFd = accept(_serverSocket, (struct sockaddr*)&clientAddr, &clientAddrLen);
+		int clientFd = accept(_serverSocket, (struct sockaddr*)&clientAddr, &clientAddrLen); // to get a new fd for the socket client
 		if (clientFd == -1)
 		{
-			if (errno == EWOULDBLOCK || errno == EAGAIN)
+			if (errno == EWOULDBLOCK || errno == EAGAIN) // no more connections to accept
 				break;
-			if (errno == EINTR)
+			if (errno == EINTR) // interrupted, try again
 				continue;
 			std::cerr << "accept() error: " << strerror(errno) << std::endl;
 			break;
 		}
 
+		// extract client IP and port + convert to string
 		char clientIP[INET_ADDRSTRLEN];
 		inet_ntop(AF_INET, &clientAddr.sin_addr, clientIP, INET_ADDRSTRLEN);
 		int clientPort = ntohs(clientAddr.sin_port);
 		
 		std::cout << "New connection from " << clientIP << ":" << clientPort 
 		          << " (fd: " << clientFd << ")" << std::endl;
+		// set the client socket to non-blocking mode
 		try
 		{
 			_setNonBlocking(clientFd);
@@ -342,20 +345,23 @@ void Server::_acceptNewConnection()
 			continue;
 		}
 		
+		// create a new Client object and add it to the clients map
 		Client* newClient = new Client(clientFd, clientIP, clientPort);
 		_clients[clientFd] = newClient;
 		
+		// add the new client socket to the poll fds list (to check for events)
 		struct pollfd clientPollFd;
 		clientPollFd.fd = clientFd;
 		clientPollFd.events = POLLIN;
 		clientPollFd.revents = 0;
 		_pollFds.push_back(clientPollFd);
 		
-		std::cout << "Client " << clientFd << " added to poll set (" 
-		          << _clients.size() << " clients connected)" << std::endl;
+		std::cout << "Client [" << clientFd << "] added to poll set (" 
+				<< _clients.size() << " connected)" << std::endl;
 	}
 }
 
+// handle reading data from a client
 void Server::_readClientData(int fd)
 {
 	char buffer[4096];
@@ -363,7 +369,7 @@ void Server::_readClientData(int fd)
 	
 	while (true)
 	{
-		bytesRead = recv(fd, buffer, sizeof(buffer) - 1, 0);
+		bytesRead = recv(fd, buffer, sizeof(buffer) - 1, 0); // recv to read up to 4095 bytes
 		
 		if (bytesRead > 0)
 		{
