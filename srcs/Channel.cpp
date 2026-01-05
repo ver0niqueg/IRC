@@ -15,7 +15,8 @@ Channel::Channel(const std::string& name)
 
 Channel::~Channel() {}
 
-bool Channel::addUser(Client* client, const std::string& key) {
+bool Channel::addUser(Client* client, const std::string& key) 
+{
     if (_modes['k'] && _key != "" && key != _key)
         return false;
     if (_modes['l'] && _limit > 0 && (int)_members.size() >= _limit)
@@ -26,30 +27,36 @@ bool Channel::addUser(Client* client, const std::string& key) {
     return true;
 }
 
-bool Channel::removeUser(Client* client) {
+bool Channel::removeUser(Client* client) 
+{
     return _members.erase(client) > 0;
 }
 
-bool Channel::isMember(Client* client) const {
+bool Channel::isMember(Client* client) const 
+{
     return _members.find(client) != _members.end();
 }
 
-bool Channel::addOperator(Client* client) {
+bool Channel::addOperator(Client* client) 
+{
     if (!isMember(client))
         return false;
     _operators.insert(client);
     return true;
 }
 
-bool Channel::removeOperator(Client* client) {
+bool Channel::removeOperator(Client* client) 
+{
     return _operators.erase(client) > 0;
 }
 
-bool Channel::isOperator(Client* client) const {
+bool Channel::isOperator(Client* client) const 
+{
     return _operators.find(client) != _operators.end();
 }
 
-void Channel::setMode(char mode, bool enabled, Client* setter, const std::string& param) {
+void Channel::setMode(char mode, bool enabled, Client* setter, const std::string& param) 
+{
     if (_modes.find(mode) == _modes.end())
         return;
         
@@ -70,80 +77,94 @@ void Channel::setMode(char mode, bool enabled, Client* setter, const std::string
     }
 }
 
-bool Channel::getMode(char mode) const {
+bool Channel::getMode(char mode) const 
+{
     std::map<char, bool>::const_iterator it = _modes.find(mode);
     if (it != _modes.end())
         return it->second;
     return false;
 }
 
-void Channel::setKey(const std::string& key) {
+void Channel::setKey(const std::string& key) 
+{
     _key = key;
     _modes['k'] = true;
 }
 
-std::string Channel::getKey() const {
+std::string Channel::getKey() const 
+{
     return _key;
 }
 
-void Channel::removeKey() {
+void Channel::removeKey() 
+{
     _key = "";
     _modes['k'] = false;
 }
 
-void Channel::setLimit(int limit) {
+void Channel::setLimit(int limit) 
+{
     _limit = limit;
     _modes['l'] = true;
 }
 
-int Channel::getLimit() const {
+int Channel::getLimit() const 
+{
     return _limit;
 }
 
-void Channel::removeLimit() {
+void Channel::removeLimit() 
+{
     _limit = 0;
     _modes['l'] = false;
 }
 
-void Channel::setTopic(const std::string& topic, Client* setter) {
+void Channel::setTopic(const std::string& topic, Client* setter) 
+{
     if (_modes['t'] && setter && !isOperator(setter))
         return;
     _topic = topic;
 }
 
-std::string Channel::getTopic() const {
+std::string Channel::getTopic() const 
+{
     return _topic;
 }
 
-bool Channel::invite(Client* operatorClient, Client* targetClient) {
+bool Channel::invite(Client* operatorClient, Client* targetClient) 
+{
     if (!isOperator(operatorClient))
         return false;
     _invited.insert(targetClient);
     return true;
 }
 
-bool Channel::kick(Client* operatorClient, Client* targetClient, const std::string& reason) {
-    if (!isOperator(operatorClient) || !isMember(targetClient)) {
+bool Channel::kick(Client* operatorClient, Client* targetClient, const std::string& reason) 
+{
+    if (!isOperator(operatorClient) || !isMember(targetClient))
         return false;
-    }
     (void)reason;
     removeUser(targetClient);
     removeOperator(targetClient);
     return true;
 }
 
-std::string Channel::getName() const {
+std::string Channel::getName() const 
+{
     return _name;
 }
 
-std::set<Client*> Channel::getMembers() const {
+std::set<Client*> Channel::getMembers() const 
+{
     return _members;
 }
 
-std::set<Client*> Channel::getOperators() const {
+std::set<Client*> Channel::getOperators() const 
+{
     return _operators;
 }
 
-std::set<Client*> Channel::getInvited() const {
+std::set<Client*> Channel::getInvited() const 
+{
     return _invited;
 }
