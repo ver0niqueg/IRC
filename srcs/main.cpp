@@ -10,7 +10,7 @@ void signalHandler(int signum)
 	(void)signum;
 	std::cout << "\nReceived shutdown signal..." << std::endl;
 	if (g_server != NULL)
-		g_server->stop();
+		g_server->shutdown();
 }
 
 int main(int argc, char** argv)
@@ -45,9 +45,9 @@ int main(int argc, char** argv)
 		std::cout << "Press Ctrl+C to stop the server" << std::endl;
 		std::cout << std::endl;
 		
-		server.start();
+		server.run();
 		
-		server.stop();
+		server.shutdown();
 		g_server = NULL;
 	}
 	catch (const std::exception& e)
