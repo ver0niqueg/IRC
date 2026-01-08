@@ -25,12 +25,12 @@ void CommandHandler::cmdPass(Client* client, const std::vector<std::string> &par
             return;
         }
         client->setPasswordGiven(true);
-        std::cout << "Client " << client->getClientFd() << " provided correct password" << std::endl;
+        std::cout << PASTEL_VIOLET << "[INFO] " << DEFAULT << "Client " << client->getClientFd() << " provided correct password" << std::endl;
     } 
     else 
     {
         sendNumericReply(client, ERR_PASSWDMISMATCH, ":Password incorrect");
-        std::cout << "Client " << client->getClientFd() << " provided wrong password" << std::endl;
+        std::cout << PASTEL_VIOLET << "[INFO] " << DEFAULT << "Client " << client->getClientFd() << " provided wrong password" << std::endl;
     }
 }
 

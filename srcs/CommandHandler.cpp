@@ -96,8 +96,8 @@ void CommandHandler::processCommand(Client* client, const std::string &input)
     }
 
     // log the command and parameters
-    std::cout << "Command: " << command << " (params: " << params.size() << ") from client "
-              << client->getClientFd() << std::endl;
+    std::cout << "   Command: " << command << " (params: " << params.size() << ") from client "
+              << client->getClientFd() << PASTEL_GREEN<< " ✓" << DEFAULT << std::endl;
 
     // call the handler function
     CommandHandlerFunction handler = it->second;
@@ -128,7 +128,7 @@ void CommandHandler::sendWelcomeMsg(Client* client)
     const std::string serverCreation = "This server was created today";
     const std::string serverModes = "o itkol";
 
-    std::string welcomeMsg = " :Welcome to the Internet Relay Network " + client->getPrefix();
+    std::string welcomeMsg = ": Welcome to the Internet Relay Network " + client->getPrefix();
     sendNumericReply(client, RPL_WELCOME, welcomeMsg);
 
     std::string yourHostMsg = ": Your host is " + _server->getServerName() + ", running version " + serverVersion;

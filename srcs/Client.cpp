@@ -1,4 +1,5 @@
 #include "Client.hpp"
+#include "Server.hpp"
 #include <iostream>
 #include <sstream>
 
@@ -16,12 +17,12 @@ Client::Client(int fd, const std::string& ipAddress, int port)
 	  _receiveBuffer(""),
 	  _sendBuffer("")
 {
-	std::cout << "Client object created (fd: " << _clientFd << ", " << _ipAddress << ":" << _port << ")" << std::endl;
+	std::cout << PASTEL_VIOLET << "[INFO] " << DEFAULT << "Client object created (fd: " << _clientFd << ", " << _ipAddress << ":" << _port << ")" << std::endl;
 }
 
 Client::~Client()
 {
-	std::cout << "Client object destroyed (fd: " << _clientFd;
+	std::cout << PASTEL_VIOLET << "[INFO] " << DEFAULT << "Client object destroyed (fd: " << _clientFd;
 	if (!_nickname.empty())
 		std::cout << ", nickname: " << _nickname;
 	std::cout << ")" << std::endl;
@@ -94,13 +95,13 @@ const std::set<std::string>& Client::getJoinedChannels() const
 
 void Client::setNickname(const std::string& nickname)
 {
-	std::cout << "Client " << _clientFd << " nickname set to: " << nickname << std::endl;
+	std::cout << PASTEL_VIOLET << "[INFO] " << DEFAULT << "Client " << _clientFd << " nickname set to: " << nickname << std::endl;
 	_nickname = nickname;
 }
 
 void Client::setUsername(const std::string& username)
 {
-	std::cout << "Client " << _clientFd << " username set to: " << username << std::endl;
+	std::cout << PASTEL_VIOLET << "[INFO] " << DEFAULT << "Client " << _clientFd << " username set to: " << username << std::endl;
 	_username = username;
 }
 
@@ -130,7 +131,7 @@ void Client::setRegistered(bool registered)
 {
 	_registered = registered;
 	if (registered)
-		std::cout << "Client " << _clientFd << " (" << _nickname << ") registered" << std::endl;
+		std::cout << PASTEL_VIOLET << "[INFO] " << DEFAULT << "Client " << _clientFd << " (" << _nickname << ") registered" << std::endl;
 }
 
 void Client::appendToReceiveBuffer(const char* data, size_t size)
@@ -156,14 +157,14 @@ bool Client::extractCommand(std::string& command)
 	else
 		_receiveBuffer.erase(0, pos + 1);
 	
-	std::cout << "Command extracted from client " << _clientFd << ": [" << command << "]" << std::endl;
+	std::cout << "   Command extracted from client " << _clientFd << ": [" << command << "]" << PASTEL_GREEN << " ✓" << DEFAULT << std::endl;
 	return (true);
 }
 
 void Client::appendToSendBuffer(const std::string& data)
 {
 	_sendBuffer.append(data);
-	std::cout << "Added " << data.length() << " bytes to send buffer for client " << _clientFd 
+	std::cout << PASTEL_VIOLET << "[INFO] " << DEFAULT << "Added " << data.length() << " bytes to send buffer for client " << _clientFd 
 	          << " (total: " << _sendBuffer.length() << " bytes)" << std::endl;
 }
 

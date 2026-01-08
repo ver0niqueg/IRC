@@ -41,7 +41,7 @@ int main(int argc, char** argv)
 		Server server(port, password);
 		g_server = &server;
 		
-		std::cout << "Server initialized and ready!" << std::endl;
+		std::cout << PASTEL_GREEN << "Server initialized and ready!" << DEFAULT << std::endl;
 		std::cout << "Waiting for connections..." << std::endl;
 		std::cout << "Press Ctrl+C to stop the server" << std::endl;
 		std::cout << std::endl;

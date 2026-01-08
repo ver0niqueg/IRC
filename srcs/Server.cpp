@@ -55,7 +55,7 @@ Server::~Server()
 		close(_serverSocket);
 		std::cout << "Server socket closed" << std::endl;
 	}
-	std::cout << "Server object destroyed" << std::endl;
+		std::cout << "Server object destroyed" << std::endl;
 }
 
 // server socket init
@@ -66,7 +66,7 @@ void Server::_initSocket()
 	_serverSocket = socket(AF_INET, SOCK_STREAM, 0);
 	if (_serverSocket == -1)
 		throw std::runtime_error(std::string("socket() failed: ") + strerror(errno));
-	std::cout << "Socket created (fd: " << _serverSocket << ") " << PASTEL_GREEN << "✓" << DEFAULT << std::endl;
+	std::cout << "   Socket created (fd: " << _serverSocket << ") " << PASTEL_GREEN << "✓" << DEFAULT << std::endl;
 	
 
 	int opt = 1; // option we want to activate
@@ -76,7 +76,7 @@ void Server::_initSocket()
 		close(_serverSocket);
 		throw std::runtime_error(std::string("setsockopt() failed: ") + strerror(errno));
 	}
-	std::cout << "Socket option set (SO_REUSEADDR) " << PASTEL_GREEN << "✓" << DEFAULT << std::endl;
+	std::cout << "   Socket option set (SO_REUSEADDR) " << PASTEL_GREEN << "✓" << DEFAULT << std::endl;
 	
 	struct sockaddr_in serverAddr; // server adress struct
 	std::memset(&serverAddr, 0, sizeof(serverAddr));
@@ -89,24 +89,24 @@ void Server::_initSocket()
 		close(_serverSocket);
 		throw std::runtime_error(std::string("bind() failed: ") + strerror(errno));
 	}
-	std::cout << "Socket bound to 0.0.0.0:" << _port << " " << PASTEL_GREEN << "✓" << DEFAULT << std::endl;
+	std::cout << "   Socket bound to 0.0.0.0:" << _port << " " << PASTEL_GREEN << "✓" << DEFAULT << std::endl;
 	
 	if (listen(_serverSocket, SOMAXCONN) < 0)
 	{
 		close(_serverSocket);
 		throw std::runtime_error(std::string("listen() failed: ") + strerror(errno));
 	}
-	std::cout << "Socket listening (backlog: SOMAXCONN) " << PASTEL_GREEN << "✓" << DEFAULT << std::endl;
+	std::cout << "   Socket listening (backlog: SOMAXCONN) " << PASTEL_GREEN << "✓" << DEFAULT << std::endl;
 	
 	_setNonBlocking(_serverSocket);
-	std::cout << "Socket set to non-blocking mode " << PASTEL_GREEN << "✓" << DEFAULT << std::endl;
+	std::cout << "   Socket set to non-blocking mode " << PASTEL_GREEN << "✓" << DEFAULT << std::endl;
 	
 	struct pollfd serverPollFd; // checking server socket (fd) for events
 	serverPollFd.fd = _serverSocket; // server socket fd
 	serverPollFd.events = POLLIN; // we want to read incoming connections
 	serverPollFd.revents = 0; // no events yet
 	_pollFds.push_back(serverPollFd); // add to poll fds list
-	std::cout << "Server socket added to poll set " << PASTEL_GREEN << "✓" << DEFAULT << std::endl;
+	std::cout << "   Server socket added to poll set " << PASTEL_GREEN << "✓" << DEFAULT << std::endl;
 	std::cout << std::endl;
 
 	std::cout << "Server socket initialization complete" << std::endl;
@@ -333,7 +333,7 @@ void Server::_acceptNewConnection()
 		inet_ntop(AF_INET, &clientAddr.sin_addr, clientIP, INET_ADDRSTRLEN);
 		int clientPort = ntohs(clientAddr.sin_port);
 		
-		std::cout << "New connection from [" << clientIP << "]:" << clientPort 
+		std::cout << PASTEL_YELLOW << "[CONNECTION] " << DEFAULT << "New connection from [" << clientIP << "]:" << clientPort 
 		          << " (fd: " << clientFd << ")" << std::endl;
 		// set the client socket to non-blocking mode
 		try
@@ -358,7 +358,7 @@ void Server::_acceptNewConnection()
 		clientPollFd.revents = 0;
 		_pollFds.push_back(clientPollFd);
 		
-		std::cout << "Client [" << clientFd << "] added to poll set (" 
+		std::cout << PASTEL_VIOLET << "[INFO] " << DEFAULT << "Client [" << clientFd << "] added to poll set (" 
 				<< _clients.size() << " connected)" << std::endl;
 	}
 }
@@ -376,7 +376,7 @@ void Server::_readClientData(int fd)
 		if (bytesRead > 0)
 		{
 			buffer[bytesRead] = '\0';
-			std::cout << "Received " << bytesRead << " bytes from client " << fd << std::endl;
+			std::cout << PASTEL_RED << "[RECV] " << DEFAULT << "Received " << bytesRead << " bytes from client [" << fd << "]" << std::endl;
 			
 			Client* client = getClient(fd);
 			if (client)
@@ -394,7 +394,7 @@ void Server::_readClientData(int fd)
 		else if (bytesRead == 0)
 		{
 
-			std::cout << "Client [" << fd << "] closed connection" << std::endl;
+			std::cout << PASTEL_VIOLET << "[INFO] " << DEFAULT << "Client [" << fd << "] closed connection" << std::endl;
 			_disconnectClient(fd);
 			break;
 		}
@@ -417,7 +417,7 @@ void Server::_readClientData(int fd)
 // handle properly the disconnection of a client (delete client object, remove from lists, close socket)
 void Server::_disconnectClient(int fd)
 {
-	std::cout << "Disconnecting client... " << fd << std::endl;
+	std::cout << PASTEL_YELLOW << "[DISCONNECTION] " << DEFAULT << "Disconnecting client... " << fd << std::endl;
 	
 	std::map<int, Client*>::iterator it = _clients.find(fd);
 	if (it != _clients.end())
@@ -426,7 +426,7 @@ void Server::_disconnectClient(int fd)
 		{
 			std::string nickname = it->second->getNickname();
 			if (!nickname.empty())
-				std::cout << "Client nickname: [" << nickname << "]" << std::endl;
+				std::cout << PASTEL_VIOLET << "[INFO] " << DEFAULT << "Client nickname: [" << nickname << "]" << std::endl;
 			
 			const std::set<std::string>& channels = it->second->getJoinedChannels();
 			for (std::set<std::string>::const_iterator chanIt = channels.begin(); chanIt != channels.end(); ++chanIt)
@@ -443,7 +443,7 @@ void Server::_disconnectClient(int fd)
 			delete it->second; // delete the Client object
 		}
 		_clients.erase(it); // remove from clients map
-		std::cout << "Client removed from client list " << PASTEL_GREEN << "✓" << DEFAULT << std::endl;
+		std::cout << "   Client removed from client list " << PASTEL_GREEN << "✓" << DEFAULT << std::endl;
 	}
 	else
 		std::cout << "   Warning: Client [" << fd << "] not found in client map" << std::endl;
@@ -454,9 +454,9 @@ void Server::_disconnectClient(int fd)
 	if (close(fd) == -1)
 		std::cerr << "   close() error: " << strerror(errno) << std::endl;
 	else
-		std::cout << "Socket closed " << PASTEL_GREEN << "✓" << DEFAULT << std::endl;
+		std::cout << "   Socket closed " << PASTEL_GREEN << "✓" << DEFAULT << std::endl;
 	
-	std::cout << "Client [" << fd << "] disconnected (" 
+	std::cout << PASTEL_YELLOW << "[DISCONNECTION] " << DEFAULT << "Client [" << fd << "] disconnected (" 
 			<< _clients.size() << " remaining)" << std::endl;
 }
 
@@ -474,10 +474,10 @@ void Server::_sendMsgToClient(int fd, const std::string& message)
 			_disconnectClient(fd);
 		}
 	}
-	else if (bytesSent < (ssize_t)message.length())
-		std::cout << "Partial send: " << bytesSent << "/" << message.length() << " bytes" << std::endl;
+	if (bytesSent < (ssize_t)message.length())
+		std::cout << PASTEL_GREEN << "[SEND] " << DEFAULT << "Partial send: " << bytesSent << "/" << message.length() << " bytes to client [" << fd << "]" << std::endl;
 	else
-		std::cout << "Sent " << bytesSent << " bytes to client " << fd << std::endl;
+		std::cout << PASTEL_GREEN << "[SEND] " << DEFAULT << "Sent " << bytesSent << " bytes to client [" << fd << "]" << std::endl;
 }
 
 // handle pending data to send to a client
@@ -500,7 +500,7 @@ void Server::_sendPendingData(int fd)
 	ssize_t bytesSent = send(fd, sendBuffer.c_str(), sendBuffer.length(), 0);
 	if (bytesSent > 0)
 	{
-		std::cout << "Sent " << bytesSent << " bytes to client [" << fd << "]" << std::endl;
+		std::cout << PASTEL_GREEN << "[SEND] " << DEFAULT << "Sent " << bytesSent << " bytes to client [" << fd << "]" << std::endl;
 		client->consumeFromSendBuffer(bytesSent);
 		
 		if (client->getSendBuffer().empty())
@@ -526,7 +526,7 @@ void Server::_setPollOut(int fd)
 			if (!(it->events & POLLOUT))
 			{
 				it->events |= POLLOUT;
-				std::cout << "POLLOUT enabled for fd [" << fd << "]" << PASTEL_GREEN << " ✓ " << DEFAULT << std::endl;
+				std::cout << "   POLLOUT enabled for fd [" << fd << "]" << PASTEL_GREEN << " ✓ " << DEFAULT << std::endl;
 			}
 			return;
 		}
@@ -544,7 +544,7 @@ void Server::_unsetPollOut(int fd)
 			if (it->events & POLLOUT)
 			{
 				it->events &= ~POLLOUT;
-				std::cout << "   ✓ POLLOUT disabled for fd [" << fd << "]" << std::endl;
+				std::cout << "   POLLOUT disabled for fd [" << fd << "]" << PASTEL_GREEN << " ✓ " << DEFAULT << std::endl;
 			}
 			return;
 		}
@@ -560,7 +560,7 @@ void Server::_removePollFd(int fd)
 		if (it->fd == fd)
 		{
 			_pollFds.erase(it);
-			std::cout << "File descriptor [" << fd << "] removed from poll set " << PASTEL_GREEN << "✓" << DEFAULT << std::endl;
+			std::cout << "   File descriptor [" << fd << "] removed from poll set " << PASTEL_GREEN << "✓" << DEFAULT << std::endl;
 			return;
 		}
 	}
