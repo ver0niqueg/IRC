@@ -90,7 +90,7 @@ void CommandHandler::processCommand(Client* client, const std::string &input)
     if (it == _commandMap.end()) 
     {
         // unknown command: log and reply error
-        std::cerr << "Unknown command from client " << client->getClientFd() << ": '" << command << "'" << std::endl;
+        std::cerr << "   Unknown command from client " << client->getClientFd() << ": '" << command << "'" << PASTEL_RED << " ✗" << DEFAULT << std::endl;
         sendNumericReply(client, ERR_UNKNOWNCOMMAND, command + " : Unknown command");
         return;
     }

@@ -123,7 +123,7 @@ void CommandHandler::cmdQuit(Client* client, const std::vector<std::string> &par
     if (!params.empty())
         reason = params[0];
     
-    std::cout << "Client " << client->getNickname() << " quit: " << reason << std::endl;
+    std::cout << "   Client " << client->getNickname() << " quit: " << reason << PASTEL_GREEN << " ✓" << DEFAULT << std::endl;
     
     const std::set<std::string>& channels = client->getJoinedChannels();
     for (std::set<std::string>::const_iterator it = channels.begin(); it != channels.end(); ++it)

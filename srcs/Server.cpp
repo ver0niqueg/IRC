@@ -295,8 +295,8 @@ void Server::broadcastToChannel(const std::string& channelName, const std::strin
 	}
 	
 	std::set<Client*> members = channel->getMembers();
-	std::cout << "Broadcasting to channel [" << channelName << "] with " 
-			<< members.size() << " members" << std::endl;
+	std::cout << "   Broadcasting to channel [" << channelName << "] with " 
+			<< members.size() << " members" << PASTEL_GREEN << " ✓" << DEFAULT << std::endl;
 	
 	for (std::set<Client*>::iterator it = members.begin(); it != members.end(); ++it)
 	{
