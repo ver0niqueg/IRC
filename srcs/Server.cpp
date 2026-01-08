@@ -66,7 +66,7 @@ void Server::_initSocket()
 	_serverSocket = socket(AF_INET, SOCK_STREAM, 0);
 	if (_serverSocket == -1)
 		throw std::runtime_error(std::string("socket() failed: ") + strerror(errno));
-	std::cout << "Socket created (fd: " << _serverSocket << ") ✓" << std::endl;
+	std::cout << "Socket created (fd: " << _serverSocket << ") " << PASTEL_GREEN << "✓" << DEFAULT << std::endl;
 	
 
 	int opt = 1; // option we want to activate
@@ -76,7 +76,7 @@ void Server::_initSocket()
 		close(_serverSocket);
 		throw std::runtime_error(std::string("setsockopt() failed: ") + strerror(errno));
 	}
-	std::cout << "   ✓ Socket option set (SO_REUSEADDR)" << std::endl;
+	std::cout << "Socket option set (SO_REUSEADDR) " << PASTEL_GREEN << "✓" << DEFAULT << std::endl;
 	
 	struct sockaddr_in serverAddr; // server adress struct
 	std::memset(&serverAddr, 0, sizeof(serverAddr));
@@ -89,25 +89,26 @@ void Server::_initSocket()
 		close(_serverSocket);
 		throw std::runtime_error(std::string("bind() failed: ") + strerror(errno));
 	}
-	std::cout << "Socket bound to 0.0.0.0:" << _port << " ✓" << std::endl;
+	std::cout << "Socket bound to 0.0.0.0:" << _port << " " << PASTEL_GREEN << "✓" << DEFAULT << std::endl;
 	
 	if (listen(_serverSocket, SOMAXCONN) < 0)
 	{
 		close(_serverSocket);
 		throw std::runtime_error(std::string("listen() failed: ") + strerror(errno));
 	}
-	std::cout << "Socket listening (backlog: SOMAXCONN) ✓" << std::endl;
+	std::cout << "Socket listening (backlog: SOMAXCONN) " << PASTEL_GREEN << "✓" << DEFAULT << std::endl;
 	
 	_setNonBlocking(_serverSocket);
-	std::cout << "Socket set to non-blocking mode ✓" << std::endl;
+	std::cout << "Socket set to non-blocking mode " << PASTEL_GREEN << "✓" << DEFAULT << std::endl;
 	
 	struct pollfd serverPollFd; // checking server socket (fd) for events
 	serverPollFd.fd = _serverSocket; // server socket fd
 	serverPollFd.events = POLLIN; // we want to read incoming connections
 	serverPollFd.revents = 0; // no events yet
 	_pollFds.push_back(serverPollFd); // add to poll fds list
-	std::cout << "Server socket added to poll set ✓" << std::endl;
-	
+	std::cout << "Server socket added to poll set " << PASTEL_GREEN << "✓" << DEFAULT << std::endl;
+	std::cout << std::endl;
+
 	std::cout << "Server socket initialization complete" << std::endl;
 }
 
@@ -138,7 +139,8 @@ const std::string& Server::getServerName() const
 
 void Server::run()
 {
-	std::cout << "Starting server event loop..." << std::endl;
+	std::cout << PASTEL_VIOLET << "Starting server event loop..." << DEFAULT << std::endl;
+	std::cout << std::endl;
 	_isrunning = true;
 	while (_isrunning)
 	{
@@ -424,7 +426,7 @@ void Server::_disconnectClient(int fd)
 		{
 			std::string nickname = it->second->getNickname();
 			if (!nickname.empty())
-				std::cout << "   Client nickname: [" << nickname << "]" << std::endl;
+				std::cout << "Client nickname: [" << nickname << "]" << std::endl;
 			
 			const std::set<std::string>& channels = it->second->getJoinedChannels();
 			for (std::set<std::string>::const_iterator chanIt = channels.begin(); chanIt != channels.end(); ++chanIt)
@@ -441,7 +443,7 @@ void Server::_disconnectClient(int fd)
 			delete it->second; // delete the Client object
 		}
 		_clients.erase(it); // remove from clients map
-		std::cout << "   ✓ Client removed from client list" << std::endl;
+		std::cout << "Client removed from client list " << PASTEL_GREEN << "✓" << DEFAULT << std::endl;
 	}
 	else
 		std::cout << "   Warning: Client [" << fd << "] not found in client map" << std::endl;
@@ -452,7 +454,7 @@ void Server::_disconnectClient(int fd)
 	if (close(fd) == -1)
 		std::cerr << "   close() error: " << strerror(errno) << std::endl;
 	else
-		std::cout << "   ✓ Socket closed" << std::endl;
+		std::cout << "Socket closed " << PASTEL_GREEN << "✓" << DEFAULT << std::endl;
 	
 	std::cout << "Client [" << fd << "] disconnected (" 
 			<< _clients.size() << " remaining)" << std::endl;
@@ -558,7 +560,7 @@ void Server::_removePollFd(int fd)
 		if (it->fd == fd)
 		{
 			_pollFds.erase(it);
-			std::cout << "   ✓ File descriptor [" << fd << "] removed from poll set" << std::endl;
+			std::cout << "File descriptor [" << fd << "] removed from poll set " << PASTEL_GREEN << "✓" << DEFAULT << std::endl;
 			return;
 		}
 	}

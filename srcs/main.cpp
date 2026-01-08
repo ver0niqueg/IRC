@@ -31,9 +31,10 @@ int main(int argc, char** argv)
 	signal(SIGTERM, signalHandler);
 	signal(SIGPIPE, SIG_IGN);
 
-	std::cout << "IRC server starting..." << std::endl;
+	std::cout << PASTEL_VIOLET << "\nIRC server starting..." << DEFAULT << std::endl;
 	std::cout << "Port: " << port << std::endl;
 	std::cout << "Password: " << std::string(password.length(), '*') << std::endl;
+	std::cout << std::endl;
 
 	try
 	{
