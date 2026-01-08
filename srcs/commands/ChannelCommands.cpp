@@ -5,7 +5,7 @@ void CommandHandler::cmdJoin(Client* client, const std::vector<std::string> &par
 {
     if (!client->isRegistered())
     {
-        sendNumericReply(client, ERR_NOTONCHANNEL, ":You have not registered");
+        sendNumericReply(client, "451", ":You have not registered"); // ERR_NOTREGISTERED
         return;
     }
     

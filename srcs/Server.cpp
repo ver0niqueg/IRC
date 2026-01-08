@@ -306,7 +306,7 @@ void Server::broadcastToChannel(const std::string& channelName, const std::strin
 			_setPollOut((*it)->getClientFd()); // check socket is ready to send data
 		}
 	}
-	std::cout << "   ✓ Message broadcasted: " << message.substr(0, 50) 
+	std::cout << "Message broadcasted: " << PASTEL_GREEN << "✓ " << DEFAULT << message.substr(0, 50) 
 	          << (message.length() > 50 ? "..." : "") << std::endl; // truncate the message if too long
 }
 
@@ -526,7 +526,7 @@ void Server::_setPollOut(int fd)
 			if (!(it->events & POLLOUT))
 			{
 				it->events |= POLLOUT;
-				std::cout << "   ✓ POLLOUT enabled for fd [" << fd << "]" << std::endl;
+				std::cout << "POLLOUT enabled for fd [" << fd << "]" << PASTEL_GREEN << " ✓ " << DEFAULT << std::endl;
 			}
 			return;
 		}

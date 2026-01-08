@@ -50,7 +50,6 @@ class Server
 		void				_acceptNewConnection();
 		void				_readClientData(int fd);
 		void				_sendPendingData(int fd);
-		void				_setPollOut(int fd);
 		void				_unsetPollOut(int fd);
 		void				_removePollFd(int fd);
 		void				_disconnectClient(int fd);
@@ -73,6 +72,8 @@ class Server
 		int					getPort() const;
 		const std::string&	getPassword() const;
 		const std::string&	getServerName() const;
+
+		void				_setPollOut(int fd);
 	
 		// clients management
 		Client*				getClient(int fd);

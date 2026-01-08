@@ -59,8 +59,7 @@ void CommandHandler::_parseInput(const std::string &input, std::string &command,
             std::string message = word.substr(1);
             std::string restOfLine;
             std::getline(iss, restOfLine);
-            if (!restOfLine.empty() && restOfLine[0] == ' ')
-                restOfLine.erase(0, 1); // remove leading space
+            // Ne pas supprimer l'espace initial, pour conserver le message tel quel
             message += restOfLine;
             params.push_back(message);
             break;
@@ -92,7 +91,7 @@ void CommandHandler::processCommand(Client* client, const std::string &input)
     {
         // unknown command: log and reply error
         std::cerr << "Unknown command from client " << client->getClientFd() << ": '" << command << "'" << std::endl;
-        sendNumericReply(client, ERR_UNKNOWNCOMMAND, command + " :Unknown command");
+        sendNumericReply(client, ERR_UNKNOWNCOMMAND, command + " : Unknown command");
         return;
     }
 
@@ -119,6 +118,7 @@ void CommandHandler::sendNumericReply(Client* client, const std::string& numeric
     ss << " " << message << "\r\n";
     
     client->sendMessage(ss.str());
+    _server->_setPollOut(client->getClientFd());
 }
 
 // send all the mandatory IRC welcome msgs to a client after a successful connection & registration
@@ -128,13 +128,13 @@ void CommandHandler::sendWelcomeMsg(Client* client)
     const std::string serverCreation = "This server was created today";
     const std::string serverModes = "o itkol";
 
-    std::string welcomeMsg = ":Welcome to the Internet Relay Network " + client->getPrefix();
+    std::string welcomeMsg = " :Welcome to the Internet Relay Network " + client->getPrefix();
     sendNumericReply(client, RPL_WELCOME, welcomeMsg);
 
-    std::string yourHostMsg = ":Your host is " + _server->getServerName() + ", running version " + serverVersion;
+    std::string yourHostMsg = ": Your host is " + _server->getServerName() + ", running version " + serverVersion;
     sendNumericReply(client, RPL_YOURHOST, yourHostMsg);
 
-    sendNumericReply(client, RPL_CREATED, ":" + serverCreation);
+    sendNumericReply(client, RPL_CREATED, ": " + serverCreation);
 
     std::string myInfoMsg = _server->getServerName() + " " + serverVersion + " " + serverModes;
     sendNumericReply(client, RPL_MYINFO, myInfoMsg);
