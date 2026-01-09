@@ -46,13 +46,13 @@ class Channel
         std::string getName() const;
         std::set<Client*> getMembers() const;
         std::set<Client*> getOperators() const;
-        std::set<Client*> getInvited() const;
+        std::set<std::string> getInvited() const;
 
     private:
         std::string _name;
         std::set<Client*> _members;
         std::set<Client*> _operators;
-        std::set<Client*> _invited;
+        std::set<std::string> _invited;
         std::string _topic;
         std::map<char, bool> _modes; // i, t, k, l, o
         std::string _key;

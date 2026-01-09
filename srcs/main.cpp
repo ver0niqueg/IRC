@@ -58,6 +58,6 @@ int main(int argc, char** argv)
 		return (1);
 	}
 
-	std::cout << "Server stopped" << std::endl;
+	std::cout << PASTEL_RED << "Server stopped" << DEFAULT << std::endl;
 	return (0);
 }

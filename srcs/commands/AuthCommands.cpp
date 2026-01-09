@@ -26,6 +26,11 @@ void CommandHandler::cmdPass(Client* client, const std::vector<std::string> &par
         }
         client->setPasswordGiven(true);
         std::cout << PASTEL_VIOLET << "[INFO] " << DEFAULT << "Client " << client->getClientFd() << " provided correct password" << std::endl;
+        // Nouvelle logique : enregistrer si nick et user sont déjà là
+        if (!client->getNickname().empty() && !client->getUsername().empty() && !client->isRegistered()) {
+            client->setRegistered(true);
+            sendWelcomeMsg(client);
+        }
     } 
     else 
     {
@@ -109,7 +114,7 @@ void CommandHandler::cmdUser(Client* client, const std::vector<std::string> &par
     client->setUsername(username);
     client->setRealname(realname);
     
-    if (!client->getNickname().empty())
+    if (!client->getNickname().empty() && client->isPasswordGiven() && !client->isRegistered())
     {
         client->setRegistered(true);
         sendWelcomeMsg(client);

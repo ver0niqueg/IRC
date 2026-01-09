@@ -306,11 +306,11 @@ void Server::broadcastToChannel(const std::string& channelName, const std::strin
 			_setPollOut((*it)->getClientFd()); // check socket is ready to send data
 		}
 	}
-	std::cout << "Message broadcasted: " << PASTEL_GREEN << "✓ " << DEFAULT << message.substr(0, 50) 
+	std::cout << "   Message broadcasted: " << PASTEL_GREEN << "✓ " << DEFAULT << message.substr(0, 50) 
 	          << (message.length() > 50 ? "..." : "") << std::endl; // truncate the message if too long
 }
 
-// handle new incoming connections
+// handle new incoming connectionsvalgrind ./ircserv 6667 <motdepasse>
 void Server::_acceptNewConnection()
 {
 	struct sockaddr_in clientAddr; // IP + port of the connecting client

@@ -52,6 +52,7 @@ void CommandHandler::cmdPrivmsg(Client* client, const std::vector<std::string> &
         
         std::string msg = client->getPrefix() + " PRIVMSG " + target + " :" + message + "\r\n";
         targetClient->sendMessage(msg);
+        _server->_setPollOut(targetClient->getClientFd());
     }
 }
 

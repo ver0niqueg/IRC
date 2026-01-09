@@ -1,4 +1,5 @@
 #include "Channel.hpp"
+#include "Client.hpp"
 #include <algorithm>
 #include <iostream>
 #include <cstdlib>
@@ -21,15 +22,20 @@ bool Channel::addUser(Client* client, const std::string& key)
         return false;
     if (_modes['l'] && _limit > 0 && (int)_members.size() >= _limit)
         return false;
-    if (_modes['i'] && _invited.find(client) == _invited.end())
+    if (_modes['i'] && _invited.find(client->getNickname()) == _invited.end())
         return false;
     _members.insert(client);
+    // consume invitation once the invited nick successfully joins
+    _invited.erase(client->getNickname());
+    (void)client;
     return true;
 }
 
 bool Channel::removeUser(Client* client) 
 {
-    return _members.erase(client) > 0;
+    bool removed = _members.erase(client) > 0;
+    (void)client;
+    return removed;
 }
 
 bool Channel::isMember(Client* client) const 
@@ -135,7 +141,8 @@ bool Channel::invite(Client* operatorClient, Client* targetClient)
 {
     if (!isOperator(operatorClient))
         return false;
-    _invited.insert(targetClient);
+    if (targetClient)
+        _invited.insert(targetClient->getNickname());
     return true;
 }
 
@@ -146,6 +153,8 @@ bool Channel::kick(Client* operatorClient, Client* targetClient, const std::stri
     (void)reason;
     removeUser(targetClient);
     removeOperator(targetClient);
+    // Remove any outstanding invitation for the kicked nickname
+    _invited.erase(targetClient->getNickname());
     return true;
 }
 
@@ -164,7 +173,7 @@ std::set<Client*> Channel::getOperators() const
     return _operators;
 }
 
-std::set<Client*> Channel::getInvited() const 
+std::set<std::string> Channel::getInvited() const 
 {
     return _invited;
 }
