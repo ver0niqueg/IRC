@@ -1,4 +1,5 @@
 #include "CommandHandler.hpp"
+#include "Colors.hpp"
 #include <cctype>
 
 CommandHandler::CommandHandler(Server *server) : _server(server)

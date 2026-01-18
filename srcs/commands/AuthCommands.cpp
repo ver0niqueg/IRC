@@ -1,4 +1,5 @@
 #include "CommandHandler.hpp"
+#include "Colors.hpp"
 
 // validate the client's password
 void CommandHandler::cmdPass(Client* client, const std::vector<std::string> &params)

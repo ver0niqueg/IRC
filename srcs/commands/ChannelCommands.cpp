@@ -1,5 +1,5 @@
 #include "CommandHandler.hpp"
-#include "Channel.hpp"
+#include "Colors.hpp"
 
 void CommandHandler::cmdJoin(Client* client, const std::vector<std::string> &params)
 {

@@ -7,13 +7,6 @@
 #include <poll.h>
 #include <stdexcept>
 
-static const char* DEFAULT       = "\033[0m";
-static const char* WHITE         = "\033[1;37m";
-static const char* PASTEL_VIOLET = "\033[1;38;5;183m";
-static const char* PASTEL_GREEN  = "\033[1;38;5;120m";
-static const char* PASTEL_RED    = "\033[1;38;5;203m";
-static const char* PASTEL_YELLOW = "\033[1;38;5;228m";
-
 // forward declarations
 class Client;
 class Channel;

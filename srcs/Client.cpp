@@ -1,5 +1,6 @@
 #include "Client.hpp"
 #include "Server.hpp"
+#include "Colors.hpp"
 #include <iostream>
 #include <sstream>
 

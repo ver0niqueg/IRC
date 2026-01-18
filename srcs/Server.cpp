@@ -2,6 +2,7 @@
 #include "Client.hpp"
 #include "Channel.hpp"
 #include "CommandHandler.hpp"
+#include "Colors.hpp"
 #include <iostream>
 #include <cstring>
 #include <cerrno>

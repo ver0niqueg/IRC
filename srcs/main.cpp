@@ -1,4 +1,5 @@
 #include "Server.hpp"
+#include "Colors.hpp"
 #include <iostream>
 #include <cstdlib>
 #include <csignal>
