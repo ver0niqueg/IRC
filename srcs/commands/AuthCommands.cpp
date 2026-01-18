@@ -143,6 +143,8 @@ void CommandHandler::cmdQuit(Client* client, const std::vector<std::string> &par
             channel->removeOperator(client);
         }
     }
+    // finally remove the client from the server (close socket, free resources)
+    _server->removeClient(client->getClientFd());
 }
 
 // respond to PING command from client

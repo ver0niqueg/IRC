@@ -307,8 +307,18 @@ void Server::broadcastToChannel(const std::string& channelName, const std::strin
 			_setPollOut((*it)->getClientFd()); // check socket is ready to send data
 		}
 	}
-	std::cout << "   Message broadcasted: " << PASTEL_GREEN << "✓ " << DEFAULT << message.substr(0, 50) 
-	          << (message.length() > 50 ? "..." : "") << std::endl; // truncate the message if too long
+	// prepare a preview without trailing CR/LF to avoid extra blank lines in logs
+	std::string preview = message;
+	while (!preview.empty())
+	{
+		char last = preview[preview.size() - 1];
+		if (last == '\n' || last == '\r')
+			preview.resize(preview.size() - 1);
+		else
+			break;
+	}
+	std::cout << "   Message broadcasted: " << PASTEL_GREEN << "✓ " << DEFAULT
+			  << preview.substr(0, 50) << (preview.length() > 50 ? "..." : "") << std::endl; // truncate the message if too long
 }
 
 // handle new incoming connectionsvalgrind ./ircserv 6667 <motdepasse>
@@ -457,8 +467,8 @@ void Server::_disconnectClient(int fd)
 	else
 		std::cout << "   Socket closed " << PASTEL_GREEN << "✓" << DEFAULT << std::endl;
 	
-	std::cout << PASTEL_YELLOW << "[DISCONNECTION] " << DEFAULT << "Client [" << fd << "] disconnected (" 
-			<< _clients.size() << " remaining)" << std::endl;
+	std::cout <<  "Client [" << fd << "] disconnected (" 
+			<< _clients.size() << " remaining)" << PASTEL_GREEN << "✓" << DEFAULT << std::endl;
 }
 
 // send a message immediately to a client via its socket
