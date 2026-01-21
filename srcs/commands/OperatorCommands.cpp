@@ -1,7 +1,8 @@
 #include "CommandHandler.hpp"
+#include "Client.hpp"
+#include "Server.hpp"
 #include "Channel.hpp"
-#include <sstream>
-#include <cstdlib>
+#include <iostream>
 
 void CommandHandler::cmdKick(Client* client, const std::vector<std::string> &params)
 {

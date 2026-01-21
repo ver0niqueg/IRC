@@ -1,4 +1,7 @@
 #include "CommandHandler.hpp"
+#include "Client.hpp"
+#include "Server.hpp"
+#include "Channel.hpp"
 
 void CommandHandler::cmdPrivmsg(Client* client, const std::vector<std::string> &params)
 {

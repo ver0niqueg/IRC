@@ -1,5 +1,13 @@
+// srcs/commands/AuthCommands.cpp
+
 #include "CommandHandler.hpp"
 #include "Colors.hpp"
+#include "Client.hpp"   // CHANGED
+#include "Server.hpp"   // CHANGED
+#include "Channel.hpp"  // CHANGED (used in NICK broadcast)
+#include <iostream>     // CHANGED
+#include <set>          // CHANGED
+#include <string>       // CHANGED
 
 // validate the client's password
 void CommandHandler::cmdPass(Client* client, const std::vector<std::string> &params)
@@ -120,42 +128,4 @@ void CommandHandler::cmdUser(Client* client, const std::vector<std::string> &par
         client->setRegistered(true);
         sendWelcomeMsg(client);
     }
-}
-
-// handle client quit command
-void CommandHandler::cmdQuit(Client* client, const std::vector<std::string> &params)
-{
-    std::string reason = "Client quit";
-    if (!params.empty())
-        reason = params[0];
-    
-    std::cout << "   Client " << client->getNickname() << " quit: " << reason << PASTEL_GREEN << " ✓" << DEFAULT << std::endl;
-    
-    const std::set<std::string>& channels = client->getJoinedChannels();
-    for (std::set<std::string>::const_iterator it = channels.begin(); it != channels.end(); ++it)
-    {
-        Channel* channel = _server->getChannel(*it);
-        if (channel)
-        {
-            std::string quitMsg = client->getPrefix() + " QUIT :" + reason + "\r\n";
-            _server->broadcastToChannel(*it, quitMsg, client->getClientFd());
-            channel->removeUser(client);
-            channel->removeOperator(client);
-        }
-    }
-    // finally remove the client from the server (close socket, free resources)
-    _server->removeClient(client->getClientFd());
-}
-
-// respond to PING command from client
-void CommandHandler::cmdPing(Client* client, const std::vector<std::string> &params)
-{
-    if (params.empty())
-    {
-        sendNumericReply(client, ERR_NEEDMOREPARAMS, "PING :Not enough parameters");
-        return;
-    }
-    
-    std::string response = ":" + _server->getServerName() + " PONG " + _server->getServerName() + " :" + params[0] + "\r\n";
-    client->sendMessage(response);
 }
