@@ -1,9 +1,9 @@
 #ifndef CHANNEL_HPP
 #define CHANNEL_HPP
 
-#include <string> // ajout
-#include <map>    // ajout
-#include <set>    // ajout
+#include <string> 
+#include <map>    
+#include <set>  
 
 class Client;
 
@@ -25,7 +25,7 @@ class Channel
 
         // modes
         void setMode(char mode, bool enabled, Client* setter = NULL,
-                     const std::string& param = ""); // CHANGED
+                     const std::string& param = ""); 
         bool getMode(char mode) const;
 
         // key + limit
@@ -40,10 +40,10 @@ class Channel
         void setTopic(const std::string& topic, Client* setter);
         std::string getTopic() const;
 
-        // cmds
+        // commands
         bool invite(Client* operatorClient, Client* targetClient);
         bool kick(Client* operatorClient, Client* targetClient,
-                  const std::string& reason = ""); // CHANGED
+                  const std::string& reason = ""); 
 
         // getters
         std::string getName() const;

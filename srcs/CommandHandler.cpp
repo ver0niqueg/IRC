@@ -49,25 +49,20 @@ void CommandHandler::_parseInput(const std::string &input, std::string &command,
     std::istringstream iss(input);
     std::string word;
 
-    // extract the command (first word)
     if (!(iss >> command))
         return;
 
-    // uppercase the command for uniformity
     for (size_t i = 0; i < command.length(); ++i)
         command[i] = std::toupper(command[i]);
 
-    // parse parameters
     while (iss >> word)
     {
-        // if a parameter starts with ':', everything after is a single parameter (the message)
         if (!word.empty() && word[0] == ':')
         {
             std::string message = word.substr(1);
             std::string restOfLine;
 
             std::getline(iss, restOfLine);
-            // keep the initial space to preserve the message exactly as typed
             message += restOfLine;
 
             params.push_back(message);
@@ -191,14 +186,6 @@ bool CommandHandler::isValidChannelName(const std::string& name)
     return true;
 }
 
-/*
-** Minimalistic fix for your linker errors:
-** - cmdQuit and cmdPing must exist somewhere in compiled objects,
-**   because _initCommandMap() references them.
-** - We keep them here to avoid adding files / touching headers.
-*/
-
-// handle client quit command
 void CommandHandler::cmdQuit(Client* client, const std::vector<std::string> &params)
 {
     std::string reason = "Client quit";

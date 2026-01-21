@@ -1,20 +1,19 @@
 #ifndef COMMANDHANDLER_HPP
 #define COMMANDHANDLER_HPP
 
-#include "NumericReplies.hpp" // (for safety)
+#include "NumericReplies.hpp" 
 #include <string>             
 #include <vector>             
 #include <map>                
 
-class Server; // forward declaration
-class Client; // forward declaration
+class Server;
+class Client; 
 
 class CommandHandler
 {
     public:
         CommandHandler(Server *server);
 
-        // typedef for pointer to member functions of CommandHandler
         typedef void (CommandHandler::*CommandHandlerFunction)(Client* client, const std::vector<std::string>&);
 
         void processCommand(Client* client, const std::string &input);
@@ -22,38 +21,37 @@ class CommandHandler
     private:
         Server *_server;
 
-        // map of commands to their handlers
         std::map<std::string, CommandHandlerFunction> _commandMap;
 
         void _initCommandMap();
 
         void _parseInput(const std::string &input, std::string &command, std::vector<std::string> &params);
 
-        // AUTH COMMANDS
+        // authorisation commands
         void cmdPass(Client* client, const std::vector<std::string> &params);
         void cmdNick(Client* client, const std::vector<std::string> &params);
         void cmdUser(Client* client, const std::vector<std::string> &params);
 
-        // CHANNEL COMMANDS
+        // channel commands
         void cmdJoin(Client* client, const std::vector<std::string> &params);
         void cmdPart(Client* client, const std::vector<std::string> &params);
         void cmdNames(Client* client, const std::vector<std::string> &params);
 
-        // MESSAGE COMMANDS
+        // message commands
         void cmdPrivmsg(Client* client, const std::vector<std::string> &params);
         void cmdNotice(Client* client, const std::vector<std::string> &params);
 
-        // OPERATOR COMMANDS
+        // operator commands
         void cmdKick(Client* client, const std::vector<std::string> &params);
         void cmdInvite(Client* client, const std::vector<std::string> &params);
         void cmdTopic(Client* client, const std::vector<std::string> &params);
         void cmdMode(Client* client, const std::vector<std::string> &params);
 
-        // UTILITY COMMANDS
+        // utils commands
         void cmdQuit(Client* client, const std::vector<std::string> &params);
         void cmdPing(Client* client, const std::vector<std::string> &params);
 
-        // HELPERS
+        // helpers
         void sendWelcomeMsg(Client* client);
         void sendNumericReply(Client* client, const std::string& numeric, const std::string& message);
         bool isValidNickname(const std::string& nickname);

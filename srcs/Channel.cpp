@@ -25,7 +25,6 @@ bool Channel::addUser(Client* client, const std::string& key)
     if (_modes['i'] && _invited.find(client->getNickname()) == _invited.end())
         return false;
     _members.insert(client);
-    // consume invitation once the invited nick successfully joins
     _invited.erase(client->getNickname());
     (void)client;
     return true;
@@ -153,7 +152,6 @@ bool Channel::kick(Client* operatorClient, Client* targetClient, const std::stri
     (void)reason;
     removeUser(targetClient);
     removeOperator(targetClient);
-    // Remove any outstanding invitation for the kicked nickname
     _invited.erase(targetClient->getNickname());
     return true;
 }

@@ -9,7 +9,7 @@ void CommandHandler::cmdJoin(Client* client, const std::vector<std::string> &par
 {
     if (!client->isRegistered())
     {
-        sendNumericReply(client, "451", ":You have not registered"); // ERR_NOTREGISTERED
+        sendNumericReply(client, "451", ":You have not registered"); 
         return;
     }
 
@@ -58,14 +58,11 @@ void CommandHandler::cmdJoin(Client* client, const std::vector<std::string> &par
             continue;
         }
 
-        // Already in channel => ignore (minimal behavior)
         if (chan->isMember(client))
             continue;
 
-        // ====== IMPORTANT: determine the REAL reason before addUser() ======
         if (!isNewChannel)
         {
-            // 1) Invite-only (+i) and client not invited => 473
             if (chan->getMode('i'))
             {
                 std::set<std::string> invited = chan->getInvited();
@@ -76,8 +73,6 @@ void CommandHandler::cmdJoin(Client* client, const std::vector<std::string> &par
                     continue;
                 }
             }
-
-            // 2) Limit (+l) => 471
             if (chan->getMode('l') && chan->getLimit() > 0)
             {
                 std::set<Client*> members = chan->getMembers();
@@ -88,8 +83,6 @@ void CommandHandler::cmdJoin(Client* client, const std::vector<std::string> &par
                     continue;
                 }
             }
-
-            // 3) Key (+k) => 475
             if (chan->getMode('k') && !chan->getKey().empty())
             {
                 if (key != chan->getKey())
@@ -100,8 +93,6 @@ void CommandHandler::cmdJoin(Client* client, const std::vector<std::string> &par
                 }
             }
         }
-
-        // Now it should succeed (or fail only for an unexpected reason)
         if (!chan->addUser(client, key))
         {
             sendNumericReply(client, ERR_NOSUCHCHANNEL,

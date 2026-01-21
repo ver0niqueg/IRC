@@ -12,7 +12,6 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 
-// server constructor
 Server::Server(int port, const std::string& password)
 	: _port(port),
 	  _password(password),

@@ -1,7 +1,7 @@
 #ifndef NUMERIC_REPLIES_HPP
 #define NUMERIC_REPLIES_HPP
 
-// Success replies (2xx-3xx)
+// SUCCESS replies (2xx-3xx)
 #define RPL_WELCOME            "001"  // :server 001 nick :Welcome to the Internet Relay Network nick!user@host
 #define RPL_YOURHOST           "002"  // :server 002 nick :Your host is <servername>, running version <ver>
 #define RPL_CREATED            "003"  // :server 003 nick :This server was created <date>
@@ -13,7 +13,7 @@
 #define RPL_ENDOFNAMES         "366"  // :server 366 nick #channel :End of /NAMES list
 #define RPL_CHANNELMODEIS      "324"  // :server 324 nick #channel +modes [mode_params]
 
-// Error replies (4xx-5xx)
+// ERROR replies (4xx-5xx)
 #define ERR_NOSUCHNICK         "401"  // :server 401 nick target :No such nick/channel
 #define ERR_NOSUCHSERVER       "402"  // :server 402 nick server :No such server
 #define ERR_NOSUCHCHANNEL      "403"  // :server 403 nick #channel :No such channel

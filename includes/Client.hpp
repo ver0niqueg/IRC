@@ -2,8 +2,8 @@
 #define CLIENT_HPP
 
 #include <string>
-#include <set>     // ajout
-#include <cstddef> // pour size_t
+#include <set>    
+#include <cstddef> 
 
 class Client
 {
@@ -19,28 +19,27 @@ class Client
 		std::string			_realname;
 		std::string			_hostname;
 
-		// Authentication state
+		// authentication state
 		bool				_authenticated;
 		bool				_passwordGiven;
-		bool				_registered; // true when NICK + USER are given
+		bool				_registered; 
 
-		// Communication buffers
-		std::string			_receiveBuffer;	// Data received waiting to be processed
-		std::string			_sendBuffer;	// Data to be sent
+		// communication buffers
+		std::string			_receiveBuffer;	
+		std::string			_sendBuffer;	
 
-		// Channels the client belongs to
+		// channels the client belongs to
 		std::set<std::string>	_joinedChannels;
 
-		// Prevent copying
+		// prevent copying
 		Client(const Client& other);
 		Client& operator=(const Client& other);
 
 	public:
-		// Constructor and destructor
 		Client(int fd, const std::string& ipAddress, int port);
 		~Client();
 
-		// Getters
+		// getters
 		int					getClientFd() const;
 		std::string			getIpAddress() const;
 		int					getPort() const;
@@ -56,7 +55,7 @@ class Client
 
 		const std::set<std::string>&	getJoinedChannels() const;
 
-		// Setters
+		// setters
 		void				setNickname(const std::string& nickname);
 		void				setUsername(const std::string& username);
 		void				setRealname(const std::string& realname);
@@ -65,21 +64,21 @@ class Client
 		void				setPasswordGiven(bool given);
 		void				setRegistered(bool registered);
 
-		// Buffer management
+		// buffer management
 		void				appendToReceiveBuffer(const char* data, size_t size);
-		bool				extractCommand(std::string& command); // extracts a complete command (terminated by \r\n)
+		bool				extractCommand(std::string& command); 
 		void				appendToSendBuffer(const std::string& data);
-		void				consumeFromSendBuffer(size_t bytes); // removes the first bytes from the send buffer
+		void				consumeFromSendBuffer(size_t bytes); 
 		void				clearSendBuffer();
 
-		// Channel management
+		// channel management
 		void				joinChannel(const std::string& channelName);
 		void				leaveChannel(const std::string& channelName);
 		bool				isInChannel(const std::string& channelName) const;
 
-		// Utilities
-		std::string			getPrefix() const; // returns the IRC prefix (:nickname!username@hostname)
-		void				sendMessage(const std::string& message); // adds to the send buffer
+		// utils
+		std::string			getPrefix() const; 
+		void				sendMessage(const std::string& message);
 };
 
 #endif

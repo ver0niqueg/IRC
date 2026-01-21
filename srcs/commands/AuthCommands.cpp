@@ -1,15 +1,12 @@
-// srcs/commands/AuthCommands.cpp
-
 #include "CommandHandler.hpp"
 #include "Colors.hpp"
-#include "Client.hpp"   // CHANGED
-#include "Server.hpp"   // CHANGED
-#include "Channel.hpp"  // CHANGED (used in NICK broadcast)
-#include <iostream>     // CHANGED
-#include <set>          // CHANGED
-#include <string>       // CHANGED
+#include "Client.hpp"   
+#include "Server.hpp"   
+#include "Channel.hpp"  
+#include <iostream>     
+#include <set>          
+#include <string>       
 
-// validate the client's password
 void CommandHandler::cmdPass(Client* client, const std::vector<std::string> &params)
 {
     if (client->isRegistered()) 
@@ -35,7 +32,6 @@ void CommandHandler::cmdPass(Client* client, const std::vector<std::string> &par
         }
         client->setPasswordGiven(true);
         std::cout << PASTEL_VIOLET << "[INFO] " << DEFAULT << "Client " << client->getClientFd() << " provided correct password" << std::endl;
-        // Nouvelle logique : enregistrer si nick et user sont déjà là
         if (!client->getNickname().empty() && !client->getUsername().empty() && !client->isRegistered()) {
             client->setRegistered(true);
             sendWelcomeMsg(client);

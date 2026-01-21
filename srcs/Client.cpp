@@ -20,14 +20,14 @@ Client::Client(int fd, const std::string& ipAddress, int port)
 {
 	std::cout << PASTEL_VIOLET << "[INFO] " << DEFAULT
 			  << "Client connected (fd: " << _clientFd
-			  << ", addr: " << _ipAddress << ":" << _port << ")" // CHANGED
+			  << ", addr: " << _ipAddress << ":" << _port << ")" 
 			  << std::endl;
 }
 
 Client::~Client()
 {
 	std::cout << PASTEL_VIOLET << "[INFO] " << DEFAULT
-			  << "Client disconnected (fd: " << _clientFd; // CHANGED
+			  << "Client disconnected (fd: " << _clientFd; 
 	if (!_nickname.empty())
 		std::cout << ", nick: " << _nickname;
 	std::cout << ")" << std::endl;
@@ -141,7 +141,7 @@ void Client::setRegistered(bool registered)
 	_registered = registered;
 	if (registered)
 		std::cout << PASTEL_VIOLET << "[INFO] " << DEFAULT
-				  << "Client registered (fd: " << _clientFd << ", nick: " << _nickname << ")" // CHANGED
+				  << "Client registered (fd: " << _clientFd << ", nick: " << _nickname << ")" 
 				  << std::endl;
 }
 
@@ -178,7 +178,7 @@ void Client::appendToSendBuffer(const std::string& data)
 {
 	_sendBuffer.append(data);
 	std::cout << PASTEL_VIOLET << "[INFO] " << DEFAULT
-			  << "Queued " << data.length() << " bytes to send buffer for fd " << _clientFd // CHANGED
+			  << "Queued " << data.length() << " bytes to send buffer for fd " << _clientFd 
 			  << " (total: " << _sendBuffer.length() << " bytes)"
 			  << std::endl;
 }
