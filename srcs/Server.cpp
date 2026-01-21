@@ -387,7 +387,7 @@ void Server::_readClientData(int fd)
 		if (bytesRead > 0)
 		{
 			buffer[bytesRead] = '\0';
-			std::cout << PASTEL_RED << "[RECV] " << DEFAULT << "Received " << bytesRead << " bytes from client [" << fd << "]" << std::endl;
+			std::cout << PASTEL_BLUE << "[RECV] " << DEFAULT << "Received " << bytesRead << " bytes from client [" << fd << "]" << std::endl;
 			
 			Client* client = getClient(fd);
 			if (client)
