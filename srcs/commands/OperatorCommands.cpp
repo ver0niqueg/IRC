@@ -4,6 +4,7 @@
 #include "Channel.hpp"
 #include <iostream>
 
+// KICK: remove a user from a channel
 void CommandHandler::cmdKick(Client* client, const std::vector<std::string> &params)
 {
     if (!client->isRegistered())
@@ -57,6 +58,7 @@ void CommandHandler::cmdKick(Client* client, const std::vector<std::string> &par
     std::cout << targetNick << " kicked from " << channelName << " by " << client->getNickname() << std::endl;
 }
 
+// INVITE: invite a user to a channel
 void CommandHandler::cmdInvite(Client* client, const std::vector<std::string> &params)
 {
     if (!client->isRegistered())
@@ -113,6 +115,7 @@ void CommandHandler::cmdInvite(Client* client, const std::vector<std::string> &p
     std::cout << "Invite: " << targetNick << " invited to " << channelName << " by " << client->getNickname() << std::endl;
 }
 
+// TOPIC: query or set the topic of a channel
 void CommandHandler::cmdTopic(Client* client, const std::vector<std::string> &params)
 {
     if (!client->isRegistered())
@@ -165,6 +168,7 @@ void CommandHandler::cmdTopic(Client* client, const std::vector<std::string> &pa
     std::cout << "Topic of " << channelName << " changed by " << client->getNickname() << ": " << newTopic << std::endl;
 }
 
+// MODE: show or change channel modes
 void CommandHandler::cmdMode(Client* client, const std::vector<std::string> &params)
 {
     if (!client->isRegistered())

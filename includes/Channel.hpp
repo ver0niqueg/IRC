@@ -13,22 +13,18 @@ class Channel
         Channel(const std::string& name);
         ~Channel();
 
-        // membership
         bool addUser(Client* client, const std::string& key = "");
         bool removeUser(Client* client);
         bool isMember(Client* client) const;
 
-        // operators
         bool addOperator(Client* client);
         bool removeOperator(Client* client);
         bool isOperator(Client* client) const;
 
-        // modes
         void setMode(char mode, bool enabled, Client* setter = NULL,
                      const std::string& param = ""); 
         bool getMode(char mode) const;
 
-        // key + limit
         void setKey(const std::string& key);
         std::string getKey() const;
         void removeKey();
@@ -36,16 +32,13 @@ class Channel
         int getLimit() const;
         void removeLimit();
 
-        // topic
         void setTopic(const std::string& topic, Client* setter);
         std::string getTopic() const;
 
-        // commands
         bool invite(Client* operatorClient, Client* targetClient);
         bool kick(Client* operatorClient, Client* targetClient,
                   const std::string& reason = ""); 
 
-        // getters
         std::string getName() const;
         std::set<Client*> getMembers() const;
         std::set<Client*> getOperators() const;
@@ -58,7 +51,7 @@ class Channel
         std::set<std::string> _invited;
 
         std::string _topic;
-        std::map<char, bool> _modes; // i, t, k, l, o
+        std::map<char, bool> _modes;
         std::string _key;
         int _limit;
 };

@@ -5,6 +5,7 @@
 #include "Colors.hpp"
 #include <sstream>
 
+// JOIN: let a client join one or more channels
 void CommandHandler::cmdJoin(Client* client, const std::vector<std::string> &params)
 {
     if (!client->isRegistered())
@@ -132,6 +133,7 @@ void CommandHandler::cmdJoin(Client* client, const std::vector<std::string> &par
     }
 }
 
+// PART: have a client leave one or more channels
 void CommandHandler::cmdPart(Client* client, const std::vector<std::string> &params)
 {
     if (!client->isRegistered())
@@ -182,6 +184,7 @@ void CommandHandler::cmdPart(Client* client, const std::vector<std::string> &par
     }
 }
 
+// NAMES: list nicknames present in a channel
 void CommandHandler::cmdNames(Client* client, const std::vector<std::string> &params)
 {
     if (!client->isRegistered())

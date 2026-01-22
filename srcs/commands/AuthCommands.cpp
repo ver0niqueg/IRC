@@ -7,6 +7,7 @@
 #include <set>          
 #include <string>       
 
+// PASS: verify the provided password, mark it as given and complete registration if possible
 void CommandHandler::cmdPass(Client* client, const std::vector<std::string> &params)
 {
     if (client->isRegistered()) 
@@ -44,7 +45,7 @@ void CommandHandler::cmdPass(Client* client, const std::vector<std::string> &par
     }
 }
 
-// validate or update a client's nickname
+// NICK: validate or update a client's nickname
 void CommandHandler::cmdNick(Client* client, const std::vector<std::string> &params)
 {
     if (params.empty()) 
@@ -92,7 +93,7 @@ void CommandHandler::cmdNick(Client* client, const std::vector<std::string> &par
     }
 }
 
-// register a new client with username and realname
+// USER: register a new client with username and realname
 void CommandHandler::cmdUser(Client* client, const std::vector<std::string> &params)
 {
     if (client->isRegistered())

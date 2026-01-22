@@ -186,6 +186,7 @@ bool CommandHandler::isValidChannelName(const std::string& name)
     return true;
 }
 
+// QUIT: disconnect a client
 void CommandHandler::cmdQuit(Client* client, const std::vector<std::string> &params)
 {
     std::string reason = "Client quit";
@@ -209,7 +210,7 @@ void CommandHandler::cmdQuit(Client* client, const std::vector<std::string> &par
     }
 }
 
-// respond to PING command from client
+// PING: respond to PING command from client
 void CommandHandler::cmdPing(Client* client, const std::vector<std::string> &params)
 {
     if (params.empty())
