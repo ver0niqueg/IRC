@@ -373,56 +373,65 @@ void Server::_acceptNewConnection()
 	}
 }
 
-// handle reading data from a client
+// handle reading data from a client !! CHANGEMENT ICI
 void Server::_readClientData(int fd)
 {
-	char buffer[4096];
-	ssize_t bytesRead;
-	
-	while (true)
-	{
-		bytesRead = recv(fd, buffer, sizeof(buffer) - 1, 0); // recv to read up to 4095 bytes
-		
-		if (bytesRead > 0)
-		{
-			buffer[bytesRead] = '\0';
-			std::cout << PASTEL_BLUE << "[RECV] " << DEFAULT << "Received " << bytesRead << " bytes from client [" << fd << "]" << std::endl;
-			
-			Client* client = getClient(fd);
-			if (client)
-			{
-				client->appendToReceiveBuffer(buffer, bytesRead); // add data to client's receive buffer
-				
-				std::string command;
-				while (client->extractCommand(command)) // read complete commands from buffer
-				{
-					if (_commandHandler)
-						_commandHandler->processCommand(client, command);
-				}
-			}
-		}
-		else if (bytesRead == 0)
-		{
+    char buffer[4096];
+    ssize_t bytesRead;
 
-			std::cout << PASTEL_VIOLET << "[INFO] " << DEFAULT << "Client [" << fd << "] closed connection" << std::endl;
-			_disconnectClient(fd);
-			break;
-		}
-		else
-		{
-			if (errno == EWOULDBLOCK || errno == EAGAIN)
-				break;
-			else if (errno == EINTR)
-				continue;
-			else
-			{
-				std::cerr << "recv() error on client [" << fd << "]: " << strerror(errno) << std::endl;
-				_disconnectClient(fd);
-				break;
-			}
-		}
-	}
+    while (true)
+    {
+        bytesRead = recv(fd, buffer, sizeof(buffer) - 1, 0);
+
+        if (bytesRead > 0)
+        {
+            buffer[bytesRead] = '\0';
+            std::cout << PASTEL_BLUE << "[RECV] " << DEFAULT
+                      << "Received " << bytesRead << " bytes from client [" << fd << "]"
+                      << std::endl;
+
+            Client* client = getClient(fd);
+            if (!client)
+                return;
+
+            client->appendToReceiveBuffer(buffer, bytesRead);
+
+            std::string command;
+            while (client && client->extractCommand(command))
+            {
+                if (_commandHandler)
+                    _commandHandler->processCommand(client, command);
+
+                // IMPORTANT: cmdQuit() peut supprimer le client => arret immediat
+                if (!getClient(fd))
+                    return;
+
+                client = getClient(fd);
+            }
+        }
+        else if (bytesRead == 0)
+        {
+            std::cout << PASTEL_VIOLET << "[INFO] " << DEFAULT
+                      << "Client [" << fd << "] closed connection" << std::endl;
+            _disconnectClient(fd);
+            break;
+        }
+        else
+        {
+            if (errno == EWOULDBLOCK || errno == EAGAIN)
+                break;
+            else if (errno == EINTR)
+                continue;
+            else
+            {
+                std::cerr << "recv() error on client [" << fd << "]: " << strerror(errno) << std::endl;
+                _disconnectClient(fd);
+                break;
+            }
+        }
+    }
 }
+
 
 // handle properly the disconnection of a client (delete client object, remove from lists, close socket)
 void Server::_disconnectClient(int fd)
