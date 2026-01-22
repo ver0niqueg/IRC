@@ -207,7 +207,6 @@ void CommandHandler::cmdQuit(Client* client, const std::vector<std::string> &par
             channel->removeOperator(client);
         }
     }
-    _server->removeClient(client->getClientFd());
 }
 
 // respond to PING command from client
