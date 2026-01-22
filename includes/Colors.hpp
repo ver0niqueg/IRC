@@ -1,7 +1,7 @@
 #ifndef COLORS_HPP
 #define COLORS_HPP
 
-#define DEFAULT       "\033[0m"          // Reset color to terminal default
+#define DEFAULT       "\033[0m"             // Reset color to terminal default
 
 #define PASTEL_VIOLET "\033[1;38;5;183m"    // informational / lifelcycle logs (server start, client connect/disconnect, general INFO)
 #define PASTEL_GREEN  "\033[1;38;5;120m"    // Success/confirmation and positive statuses (checks, operations completed, send logs)
