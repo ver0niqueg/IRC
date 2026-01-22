@@ -92,7 +92,7 @@ void CommandHandler::processCommand(Client* client, const std::string &input)
 
     if (it == _commandMap.end())
     {
-        std::cerr << PASTEL_YELLOW << "[WARN] " << DEFAULT
+        std::cerr << PASTEL_ORANGE << "[WARN] " << DEFAULT
                   << "Unknown command from client [fd:" << client->getClientFd() << "] "
                   << "'" << command << "'" << std::endl;
 
